@@ -31,7 +31,6 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 		properties = PropertiesFile.getPropertiesVM(propertiesPath);
 	}
 	
-	
 	@Override
 	public void addPoint(String measuremntName, Date utcTime, HashMap<String, Float> fields) {
 		if(getState() == ServiceState.STARTED) {
@@ -41,13 +40,18 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				builder.addField(fieldName, fields.get(fieldName));
 			}
 			
-			influxDB.write(builder.build());
+			try {
+				influxDB.write(builder.build());
+			}
+			catch (Exception ex) {
+				log.error(ex);
+			}
 		}
 	}
 
 	@Override
 	public ServiceState getState() {
-		if(influxDB == null || !influxDB.ping().isGood()) {
+		if(influxDB == null || !Ping()) {
 			return ServiceState.STOPPED;
 		}
 		else {
@@ -58,27 +62,57 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 	@Override
 	public void start() {
 		if(getState() == ServiceState.STOPPED) {
-			influxDB = InfluxDBFactory.connect(properties.getValue("influxdbUrl"), properties.getValue("user"), properties.getValue("password"));
-			
-			String dbName = properties.getValue("dbName");
-			influxDB.query(new Query("CREATE DATABASE " + dbName, dbName, true));
-			
-			influxDB.setDatabase(dbName);
-			
-			String commandRetention = "CREATE RETENTION POLICY aRetentionPolicy ON "+ dbName + " DURATION " + properties.getValue("retentionDuration") + " REPLICATION 1 DEFAULT";
-			influxDB.query(new Query(commandRetention, dbName, true));
-			
-			influxDB.setRetentionPolicy("aRetentionPolicy");
-
-			influxDB.enableBatch(BatchOptions.DEFAULTS);
+			try {
+				influxDB = InfluxDBFactory.connect(properties.getValue("influxdbUrl"), properties.getValue("user"), properties.getValue("password"));
+				
+				String dbName = properties.getValue("dbName");
+				influxDB.query(new Query("CREATE DATABASE " + dbName, dbName, true));
+				
+				influxDB.setDatabase(dbName);
+				
+				String commandRetention = "CREATE RETENTION POLICY aRetentionPolicy ON "+ dbName + " DURATION " + properties.getValue("retentionDuration") + " REPLICATION 1 DEFAULT";
+				influxDB.query(new Query(commandRetention, dbName, true));
+				
+				influxDB.setRetentionPolicy("aRetentionPolicy");
+	
+				influxDB.enableBatch(BatchOptions.DEFAULTS);
+			}
+			catch(Exception ex) {
+				log.error(ex);
+			}
+		}
+		else {
+			log.warn("Attempt to start influxdbRepository although it is already started.");
 		}
 	}
 
 	@Override
 	public void stop() {
 		if(getState() == ServiceState.STARTED) {
+			closeInfluxDb();
+		}
+		else {
+			log.warn("Attempt to stop influxdbRepository although it is already stopped.");
+		}
+	}
+	
+	private void closeInfluxDb() {
+		try {
 			influxDB.close();
 			influxDB = null;
+		}
+		catch(Exception ex) {
+			log.error(ex);
+		}
+	}
+	
+	private boolean Ping() {
+		try {
+			return influxDB.ping().isGood();
+		}
+		catch(Exception ex) {
+			log.error(ex);
+			return false;
 		}
 	}
 
