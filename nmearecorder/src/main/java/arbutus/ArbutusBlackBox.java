@@ -15,7 +15,7 @@ import arbutus.timeservice.TimeService;
 public class ArbutusBlackBox {
 	private static Logger log = Logger.getLogger(ArbutusBlackBox.class);
 	
-	private Arbutus arbutus = new Arbutus();
+	private Arbutus arbutus = null;
 	
 	public static void main(String[] args) {
 		Runtime.getRuntime().addShutdownHook(new Thread()
@@ -35,6 +35,8 @@ public class ArbutusBlackBox {
 	}
 	
 	private synchronized void run() {
+		int exitStatus = 0;
+		
 		try {
 			ServiceManager srvMgr = ServiceManager.getInstance();
 			
@@ -43,6 +45,8 @@ public class ArbutusBlackBox {
 			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository());
 			
 			srvMgr.startServices();
+			
+			arbutus = new Arbutus();
 			
 			while (!Thread.interrupted()) {
 				try {
@@ -54,14 +58,16 @@ public class ArbutusBlackBox {
 		}
 		catch(Exception ex) {
 			log.error(ex);
+			exitStatus = 1;
 		}
 		finally {
-			arbutus.unsubscribe();
+			if(arbutus != null)
+				arbutus.unsubscribe();
 
 			ServiceManager.getInstance().stopServices();
 			log.debug("Services stopped");
 			
-			System.exit(0);
+			System.exit(exitStatus);
 		}
 	}
 }
