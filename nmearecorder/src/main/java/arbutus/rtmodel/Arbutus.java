@@ -50,7 +50,6 @@ public class Arbutus implements INMEAListener{
 	
 	private Timer timer;
 	
-	
 	public Arbutus() {
 		String fileSep = System.getProperty("file.separator");
 		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "arbutus.properties";
@@ -122,8 +121,8 @@ public class Arbutus implements INMEAListener{
 		else if(sentence instanceof SDDPT) {
 			SDDPT dpt = SDDPT.class.cast(sentence);
 			
-			if(!Float.isNaN(dpt.getDepth())) {
-				setDepth(dpt.getDepth());
+			if(!Float.isNaN(dpt.getDepth()) && !Float.isNaN(dpt.getOffsetFromTransducer())) {
+				setDepth(dpt.getDepth() + dpt.getOffsetFromTransducer());
 			}
 		}
 		else if(sentence instanceof VWVHW) {
