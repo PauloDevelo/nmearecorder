@@ -113,7 +113,7 @@ public class GPRMC extends NMEASentence {
 			try {
 				utcDateTime = NMEASentence.parseUTCDate(nmeaFields[9], nmeaFields[1]);
 			} catch (ParseException e) {
-				log.error(e);
+				log.error("Error when parsing the date and time of a GPRMC sentence.", e);
 			}
 		}
 	}

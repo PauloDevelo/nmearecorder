@@ -70,12 +70,12 @@ public class InfluxTask<T> extends TimerTask{
 						log.error("The getter of " + f.getName() + " return something else than a float.");
 					}
 				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-					log.error(e);
+					log.error("Error when adding a field for influx", e);
 				} 
 			}
 		}
 		catch(IllegalAccessException ex){
-			log.error(ex);
+			log.error("Error in addInfluxField", ex);
 		}
 	}
 

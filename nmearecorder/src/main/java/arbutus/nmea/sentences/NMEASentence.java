@@ -103,7 +103,7 @@ public abstract class NMEASentence {
 						log.error("The type of the field " + field.getName() + " is not recognized: " + field.getType().getName());
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
-					log.error(e);
+					log.error("parseNMEASentence error", e);
 				} 
 			}
 		}

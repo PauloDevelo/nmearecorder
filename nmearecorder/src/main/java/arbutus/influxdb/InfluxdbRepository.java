@@ -44,7 +44,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				influxDB.write(builder.build());
 			}
 			catch (Exception ex) {
-				log.error(ex);
+				log.error("Error in addPoint", ex);
 			}
 		}
 	}
@@ -78,7 +78,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				influxDB.enableBatch(BatchOptions.DEFAULTS);
 			}
 			catch(Exception ex) {
-				log.error(ex);
+				log.error("Error when starting the InfluxDb repo as a service.", ex);
 			}
 		}
 		else {
@@ -102,7 +102,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 			influxDB = null;
 		}
 		catch(Exception ex) {
-			log.error(ex);
+			log.error("Error when closing InfluxDbRepo.", ex);
 		}
 	}
 	
@@ -111,7 +111,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 			return influxDB.ping().isGood();
 		}
 		catch(Exception ex) {
-			log.error(ex);
+			log.error("Error in the ping", ex);
 			return false;
 		}
 	}

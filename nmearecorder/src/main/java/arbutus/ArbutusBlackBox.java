@@ -57,7 +57,7 @@ public class ArbutusBlackBox {
 			}
 		}
 		catch(Exception ex) {
-			log.error(ex);
+			log.fatal("unexpected error caught at the last minute", ex);
 			exitStatus = 1;
 		}
 		finally {

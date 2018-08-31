@@ -49,7 +49,6 @@ public class TCPReader implements Runnable {
 	
 	@Override
 	public void run() {
-
 		try (Socket socket = new Socket(properties.getValue("host"), properties.getValueInt("port", 10110));
 			 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
 
@@ -73,14 +72,8 @@ public class TCPReader implements Runnable {
 				}
 			}
 			
-		} catch (UnknownHostException e) {
-			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-		} catch(SecurityException e) {
-			log.error(e);
-		} catch(IllegalArgumentException e) {
-			log.error(e);
+		} catch (IOException | SecurityException | IllegalArgumentException e) {
+			log.error("Error when reading the tcp socket", e);
 		}
 	}
 }
