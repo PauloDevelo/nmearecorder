@@ -17,6 +17,6 @@ import arbutus.util.UtilSuite;
 	UtilSuite.class,
 	InfluxdbRepositoryTests.class
 })
-public class ArbutusSuite {
+public class BlackBoxSuite {
 
 }

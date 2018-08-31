@@ -6,16 +6,16 @@ import arbutus.influxdb.IInfluxdbRepository;
 import arbutus.influxdb.InfluxdbRepository;
 import arbutus.nmea.service.INMEAService;
 import arbutus.nmea.service.NMEAService;
-import arbutus.rtmodel.Arbutus;
+import arbutus.rtmodel.Vessel;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
 
 
-public class ArbutusBlackBox {
-	private static Logger log = Logger.getLogger(ArbutusBlackBox.class);
+public class BlackBox {
+	private static Logger log = Logger.getLogger(BlackBox.class);
 	
-	private Arbutus arbutus = null;
+	private Vessel arbutus = null;
 	
 	public static void main(String[] args) {
 		Runtime.getRuntime().addShutdownHook(new Thread()
@@ -30,7 +30,7 @@ public class ArbutusBlackBox {
             }
         });
 		
-		ArbutusBlackBox blackBox = new ArbutusBlackBox();
+		BlackBox blackBox = new BlackBox();
 		blackBox.run();
 	}
 	
@@ -46,7 +46,7 @@ public class ArbutusBlackBox {
 			
 			srvMgr.startServices();
 			
-			arbutus = new Arbutus();
+			arbutus = new Vessel();
 			
 			while (!Thread.interrupted()) {
 				try {

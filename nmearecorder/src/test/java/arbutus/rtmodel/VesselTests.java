@@ -17,8 +17,8 @@ import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
 
-public class ArbutusTests {
-	private Arbutus arbutus;
+public class VesselTests {
+	private Vessel arbutus;
 	
 	@BeforeClass
 	public static void InitTests() {
@@ -33,7 +33,7 @@ public class ArbutusTests {
 	
 	@Before
 	public void setup() {
-		arbutus = new Arbutus();
+		arbutus = new Vessel();
 	}
 	
 	@After

@@ -12,8 +12,8 @@ import arbutus.nmea.service.INMEAService;
 import arbutus.service.ServiceManager;
 import arbutus.util.PropertiesFile;
 
-public class Arbutus implements INMEAListener{
-	private static Logger log = Logger.getLogger(Arbutus.class);
+public class Vessel implements INMEAListener{
+	private static Logger log = Logger.getLogger(Vessel.class);
 	
 	private PropertiesFile properties = null;
 	
@@ -50,7 +50,7 @@ public class Arbutus implements INMEAListener{
 	
 	private Timer timer;
 	
-	public Arbutus() {
+	public Vessel() {
 		String fileSep = System.getProperty("file.separator");
 		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "arbutus.properties";
 		properties = PropertiesFile.getPropertiesVM(propertiesPath);
@@ -58,7 +58,7 @@ public class Arbutus implements INMEAListener{
 		nmeaService = ServiceManager.getInstance().getService(INMEAService.class);
 		
 		timer = new Timer();
-        timer.schedule(new InfluxTask<Arbutus>(properties.getValue("measurement"), Arbutus.class, this), 
+        timer.schedule(new InfluxTask<Vessel>(properties.getValue("measurement"), Vessel.class, this), 
         		properties.getValueInt("initialDelaySecond", 10) * 1000, 
         		properties.getValueInt("periodSecond", 2)*1000);
 		
