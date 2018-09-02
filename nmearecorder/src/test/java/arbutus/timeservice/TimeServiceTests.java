@@ -1,19 +1,23 @@
 package arbutus.timeservice;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
 import arbutus.nmea.sentences.GPRMC;
 import arbutus.nmea.service.NMEAService;
+import arbutus.test.ToolBox;
 import arbutus.timeservice.SynchronizationException;
 import arbutus.timeservice.TimeService;
 
@@ -122,6 +126,39 @@ public class TimeServiceTests {
 		
 		} catch (SynchronizationException e1) {
 			e1.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void formatSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() {
+		// Arrange
+		Date aDate = new Date(1535868218178L);
+		
+		// Act
+		try {
+			StringBuilder cmd = ToolBox.callPrivateMethod(StringBuilder.class, timeService, "formatSyncCommand", Date.class, aDate);
+			
+			// Assert
+			assertEquals("date -s \"2018/09/02 06:03:38.178+00:00\"",  cmd.toString());
+		} catch (Throwable e) {
+			fail("Should not throw anu exception");
+		}
+	}
+	
+	@Test
+	public void formatSyncCommand_WithADateNull_ShouldReturnAnEmptyCommand() {
+		// Arrange
+		Date aDate = null;
+		
+		try {
+			// Act
+			ToolBox.callPrivateMethod(StringBuilder.class, timeService, "formatSyncCommand", Date.class, aDate);
+			fail("Should have thrown an IllegalArgumentException");
+		}
+		catch(Throwable ex)
+		{
+			// Assert
+			assertTrue("Should have thrown an IllegalArgumentException", IllegalArgumentException.class.isInstance(ex));
 		}
 	}
 }
