@@ -58,8 +58,8 @@ public class TCPReader implements Runnable {
 				
 				cfs.removeIf(cf -> cf.isDone());
 				
-				if(cfs.size() > 5) {
-					log.warn("More than 5 thread in the queue: " + cfs.size());
+				if(cfs.size() > 10) {
+					log.warn("More than 10 thread in the queue: " + cfs.size());
 				}
 			}
 			

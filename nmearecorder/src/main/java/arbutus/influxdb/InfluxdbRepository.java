@@ -111,7 +111,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 			return influxDB.ping().isGood();
 		}
 		catch(Exception ex) {
-			log.error("Error in the ping", ex);
+			log.error("Error in the ping :" + ex.getMessage());
 			return false;
 		}
 	}
