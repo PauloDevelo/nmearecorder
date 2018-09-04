@@ -21,7 +21,7 @@ public class Utils {
 			throw new IllegalStateException("This operating system " + OSValidator.getOS() + " is not supported. The command " + cmd + " cannot be executed");
 		}
 		
-		if (!subProcess.waitFor(timeOutInSecond, TimeUnit.SECONDS)) {
+		if (subProcess.waitFor(timeOutInSecond, TimeUnit.SECONDS)) {
 			String s;
 	        BufferedReader br = new BufferedReader(new InputStreamReader(subProcess.getInputStream()));
 	        while ((s = br.readLine()) != null)

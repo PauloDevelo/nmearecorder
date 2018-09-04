@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class UtilsTests {
+public class UtilsTest {
 	
 	@Test(expected=IllegalStateException.class)
 	public void execCommandSync_EmptyCommand_ShouldThrowAnIllegalArgumentException() {

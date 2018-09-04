@@ -17,7 +17,7 @@ import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
 
-public class VesselTests {
+public class VesselTest {
 	private Vessel arbutus;
 	
 	@BeforeClass
@@ -56,7 +56,7 @@ public class VesselTests {
 		// Arrange
 		// wait for the timeservice to sync.
 		try {
-			TimeUnit.SECONDS.sleep(300);
+			TimeUnit.SECONDS.sleep(10);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

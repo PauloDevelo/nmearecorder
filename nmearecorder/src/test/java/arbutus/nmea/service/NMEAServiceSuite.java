@@ -8,7 +8,7 @@ import arbutus.nmea.sentences.NMEASentencesSuite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	NMEASentencesSuite.class,
-	NMEAServiceTests.class
+	NMEAServiceTest.class
 })
 public class NMEAServiceSuite {
 

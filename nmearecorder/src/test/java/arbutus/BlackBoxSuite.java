@@ -3,19 +3,19 @@ package arbutus;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import arbutus.influxdb.InfluxdbRepositoryTests;
+import arbutus.influxdb.InfluxdbRepositoryTest;
 import arbutus.nmea.NMEASuite;
 import arbutus.service.ServiceManagerTest;
-import arbutus.timeservice.TimeServiceTests;
+import arbutus.timeservice.TimeServiceTest;
 import arbutus.util.UtilSuite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	TimeServiceTests.class,
+	TimeServiceTest.class,
 	ServiceManagerTest.class,
 	NMEASuite.class,
 	UtilSuite.class,
-	InfluxdbRepositoryTests.class
+	InfluxdbRepositoryTest.class
 })
 public class BlackBoxSuite {
 

@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.matchers.JUnitMatchers.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,7 +26,7 @@ import arbutus.test.ToolBox;
 import arbutus.timeservice.SynchronizationException;
 import arbutus.timeservice.TimeService;
 
-public class TimeServiceTests {
+public class TimeServiceTest {
 	static SimpleDateFormat format = new SimpleDateFormat("dd'/'MM'/'yyyy HH':'mm':'ss'.'SSSX");
 	
 	private ITimeService timeService = null;
@@ -130,7 +133,7 @@ public class TimeServiceTests {
 	
 	
 	@Test
-	public void formatSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() {
+	public void getFormatedSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() {
 		// Arrange
 		Date aDate = new Date(1535868218178L);
 		
@@ -147,7 +150,7 @@ public class TimeServiceTests {
 	
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void formatSyncCommand_WithADateNull_ShouldReturnAnEmptyCommand() throws Throwable {
+	public void getFormatedSyncCommand_WithADateNull_ShouldThrowAnIllegalArgumentException() throws Throwable {
 		// Arrange
 		Date aDate = null;
 

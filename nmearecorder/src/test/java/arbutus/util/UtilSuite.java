@@ -5,8 +5,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	TCPReaderTests.class,
-	UtilsTests.class
+	TCPReaderTest.class,
+	UtilsTest.class
 })
 
 public class UtilSuite {
