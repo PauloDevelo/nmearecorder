@@ -8,6 +8,8 @@ public interface ITimeService {
 	
 	Date getUTCDateTime() throws SynchronizationException;
 	
+	Date getUTCDateTime(long nanoTime) throws SynchronizationException;
+	
 	public long getAccuracyNano() throws SynchronizationException;
 
 }

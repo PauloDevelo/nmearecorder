@@ -67,6 +67,16 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 	}
 	
 	@Override
+	public Date getUTCDateTime(long nanoTime) throws SynchronizationException {
+		if(!isSynchonized()) {
+			throw new SynchronizationException();
+		}
+		else {
+			return new Date(referenceTime + nanoTime / 1000000);
+		}
+	}
+	
+	@Override
 	public synchronized long getAccuracyNano() throws SynchronizationException {
 		if(!isSynchonized()) {
 			throw new SynchronizationException();
@@ -80,7 +90,7 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 	public synchronized void onNewNMEASentence(NMEASentence sentence) {
 		GPRMC gprmc = GPRMC.class.cast(sentence);
 		if(gprmc.getUtcDateTime() != null) {
-			referenceTimes.add(gprmc.getUtcDateTime().getTime() - System.nanoTime() / 1000000);
+			referenceTimes.add(gprmc.getUtcDateTime().getTime() - gprmc.getReceptionNanoTime() / 1000000);
 			
 			if(referenceTimes.size() > 100) {
 				referenceTimes.remove(0);
