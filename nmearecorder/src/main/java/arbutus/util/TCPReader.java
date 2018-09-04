@@ -65,12 +65,12 @@ public class TCPReader implements Runnable {
 				
 				if(cfs.size() < 40) {
 					cfs.add(CompletableFuture.runAsync(() -> this.consumer.accept(nanoTime, msg), executor));
-					
-					cfs.removeIf(cf -> cf.isDone());
 				}
 				else {
 					log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
 				}
+				
+				cfs.removeIf(cf -> cf.isDone());
 			}
 			
 			log.info("Terminaison of TCPReader.");
