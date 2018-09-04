@@ -37,8 +37,9 @@ public class GPBWC extends NMEASentence{
 	@nmea(pos=12)
 	private String wptId = null;
 	
-	public GPBWC(StringBuilder sentence) {
-		parseNMEASentence(sentence, this);
+	public GPBWC(long nanotime, StringBuilder nmeaSentence) {
+		super(nanotime);
+		parseNMEASentence(nmeaSentence, this);
 	}
 
 	/**

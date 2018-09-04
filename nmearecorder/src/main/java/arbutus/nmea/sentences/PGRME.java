@@ -23,7 +23,8 @@ public class PGRME extends NMEASentence {
 	@nmea(pos=5)
 	private float overallSphericalErrorInMeter = Float.NaN;
 	
-	public PGRME(StringBuilder sentence) {
+	public PGRME(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

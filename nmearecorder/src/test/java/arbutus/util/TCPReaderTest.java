@@ -109,7 +109,7 @@ public class TCPReaderTest {
 	}
 	
 	
-	private void slowConsume(StringBuilder sentence){
+	private void slowConsume(Long nantime, StringBuilder sentence){
 		try {
 			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
@@ -124,12 +124,12 @@ public class TCPReaderTest {
 	}
 	
 	int counter = 0;
-	private synchronized void consume(StringBuilder sentence) {
+	private synchronized void consume(Long nantime, StringBuilder sentence) {
 		counter++;
 		System.out.println(sentence);
 	}
 	
-	private void fastconsume(StringBuilder sentence) {
+	private void fastconsume(Long nantime, StringBuilder sentence) {
 		System.out.println(sentence);
 	}
 }

@@ -19,7 +19,8 @@ public class HCHDG extends NMEASentence {
 	private float magDevDeg = Float.NaN;
 	private float magVarDeg = Float.NaN;
 	
-	public HCHDG(StringBuilder sentence) {
+	public HCHDG(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

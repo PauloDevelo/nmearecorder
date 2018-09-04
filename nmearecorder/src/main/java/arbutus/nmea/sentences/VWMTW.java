@@ -13,7 +13,8 @@ public class VWMTW extends NMEASentence {
 	@nmea(pos=1)
 	private float waterTempCelcius = Float.NaN;
 	
-	public VWMTW(StringBuilder sentence) {
+	public VWMTW(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

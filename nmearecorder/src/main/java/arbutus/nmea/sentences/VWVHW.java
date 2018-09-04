@@ -22,7 +22,8 @@ public class VWVHW extends NMEASentence {
 	@nmea(pos=5)
 	private float stwKn = Float.NaN;
 	
-	public VWVHW(StringBuilder sentence) {
+	public VWVHW(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

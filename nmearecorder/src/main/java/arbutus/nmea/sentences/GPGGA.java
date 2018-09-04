@@ -56,7 +56,8 @@ public class GPGGA extends NMEASentence {
 	@nmea(pos=14)
 	private String refStationId = null;
 	
-	public GPGGA(StringBuilder sentence) {
+	public GPGGA(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 	

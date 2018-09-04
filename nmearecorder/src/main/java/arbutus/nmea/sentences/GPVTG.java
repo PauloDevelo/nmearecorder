@@ -21,7 +21,8 @@ public class GPVTG extends NMEASentence {
 	@nmea(pos=5)
 	private float speedKn = Float.NaN;
 	
-	public GPVTG(StringBuilder sentence) {
+	public GPVTG(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

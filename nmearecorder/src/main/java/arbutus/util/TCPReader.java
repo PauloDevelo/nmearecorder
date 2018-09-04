@@ -7,7 +7,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 import org.apache.log4j.Logger;
 
@@ -19,9 +22,9 @@ public class TCPReader implements Runnable {
 
 	private PropertiesFile properties = null;
 	
-	private Consumer<StringBuilder> consumer = null;
+	private BiConsumer<Long, StringBuilder> consumer = null;
 	
-	public TCPReader(Consumer<StringBuilder> consumer) {
+	public TCPReader(BiConsumer<Long, StringBuilder> consumer) {
 		this.consumer = consumer;
 		
 		String fileSep = System.getProperty("file.separator");
@@ -48,18 +51,25 @@ public class TCPReader implements Runnable {
 	
 	@Override
 	public void run() {
+		
+		
 		try (Socket socket = new Socket(properties.getValue("host"), properties.getValueInt("port", 10110));
 			 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
+			
+			ExecutorService executor = Executors.newFixedThreadPool(15);
 
 			List<CompletableFuture<Void>> cfs = new ArrayList<>();
 			while(!isInterrupted()) {
 				StringBuilder msg = new StringBuilder(reader.readLine());
-				cfs.add(CompletableFuture.completedFuture(msg).thenAcceptAsync(s -> this.consumer.accept(s)));
+				long nanoTime = System.nanoTime();
 				
-				cfs.removeIf(cf -> cf.isDone());
-				
-				if(cfs.size() > 10) {
-					log.warn("More than 10 thread in the queue: " + cfs.size());
+				if(cfs.size() < 40) {
+					cfs.add(CompletableFuture.runAsync(() -> this.consumer.accept(nanoTime, msg), executor));
+					
+					cfs.removeIf(cf -> cf.isDone());
+				}
+				else {
+					log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
 				}
 			}
 			
@@ -69,6 +79,18 @@ public class TCPReader implements Runnable {
 				for(CompletableFuture<Void> cf : cfs) {
 					cf.cancel(true);
 				}
+			}
+			
+			if(executor != null) {
+				executor.shutdown();
+				try {
+				    if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+				    	executor.shutdownNow();
+				    } 
+				} catch (InterruptedException e) {
+					executor.shutdownNow();
+				}
+				executor = null;
 			}
 			
 		} catch (IOException | SecurityException | IllegalArgumentException e) {

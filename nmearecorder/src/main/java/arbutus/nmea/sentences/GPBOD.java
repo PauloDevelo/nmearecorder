@@ -22,7 +22,8 @@ public class GPBOD extends NMEASentence {
 	@nmea(pos=6)
 	private String wptFrom = null;
 	
-	public GPBOD(StringBuilder nmeaSentence) {
+	public GPBOD(long nanotime, StringBuilder nmeaSentence) {
+		super(nanotime);
 		parseNMEASentence(nmeaSentence, this);
 	}
 

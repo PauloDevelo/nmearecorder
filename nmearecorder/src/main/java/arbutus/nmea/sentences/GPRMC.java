@@ -42,8 +42,9 @@ public class GPRMC extends NMEASentence {
 	
 	private float magVarDeg = Float.NaN;
 	
-	public GPRMC(StringBuilder nmeaSentence) {
-		parseNMEASentence(nmeaSentence, this);
+	public GPRMC(long nanotime, StringBuilder sentence) {
+		super(nanotime);
+		parseNMEASentence(sentence, this);
 	}
 	
 	/**

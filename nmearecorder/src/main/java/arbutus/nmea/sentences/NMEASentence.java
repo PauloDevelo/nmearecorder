@@ -111,6 +111,16 @@ public abstract class NMEASentence {
 		typedThis.initSpecialFields(nmeaFields);
 	}
 	
+	private final long receptionNanoTime;
+	
+	public NMEASentence(long receptionNanoTime) {
+		this.receptionNanoTime = receptionNanoTime;
+	}
+	
+	public long getReceptionNanoTime() {
+		return this.receptionNanoTime;
+	}
+	
 	protected void initSpecialFields(String[] nmeaFields) {
 		
 	}

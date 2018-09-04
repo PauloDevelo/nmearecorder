@@ -27,7 +27,7 @@ public class NMEAService implements IService, INMEAService {
 	
 	private HashMap<Class<? extends NMEASentence>, List<INMEAListener>> _subscribers = new HashMap<>(); 
 	
-	private void onReceiveNMEASentence(StringBuilder nmeaSentence) {
+	private void onReceiveNMEASentence(Long receptionNanoTime, StringBuilder nmeaSentence) {
 		if(nmeaSentence == null)
 		{
 			log.error("nmea sentence is null.");
@@ -39,28 +39,27 @@ public class NMEAService implements IService, INMEAService {
 		switch(sticker)
 		{
 			case WIMWV.sticker:
-				processMessage(WIMWV.class, new WIMWV(nmeaSentence));
+				processMessage(WIMWV.class, new WIMWV(receptionNanoTime, nmeaSentence));
 				return;
 			case VWMTW.sticker:
-				processMessage(VWMTW.class, new VWMTW(nmeaSentence));
+				processMessage(VWMTW.class, new VWMTW(receptionNanoTime, nmeaSentence));
 				return;
 			case VWVHW.sticker:
-				processMessage(VWVHW.class, new VWVHW(nmeaSentence));
+				processMessage(VWVHW.class, new VWVHW(receptionNanoTime, nmeaSentence));
 				return;
 			case HCHDG.sticker:
-				processMessage(HCHDG.class, new HCHDG(nmeaSentence));
+				processMessage(HCHDG.class, new HCHDG(receptionNanoTime, nmeaSentence));
 				return;
 			case GPVTG.sticker:
-				processMessage(GPVTG.class, new GPVTG(nmeaSentence));
+				processMessage(GPVTG.class, new GPVTG(receptionNanoTime, nmeaSentence));
 				return;
 			case SDDPT.sticker:
-				processMessage(SDDPT.class, new SDDPT(nmeaSentence));
+				processMessage(SDDPT.class, new SDDPT(receptionNanoTime, nmeaSentence));
 				return;
 			case GPRMC.sticker:
-				processMessage(GPRMC.class, new GPRMC(nmeaSentence));
+				processMessage(GPRMC.class, new GPRMC(receptionNanoTime, nmeaSentence));
 				return;
 			default:
-				//log.debug("This sticker is unknown: " + sticker);
 				return;
 		}
 	}
@@ -79,7 +78,6 @@ public class NMEAService implements IService, INMEAService {
 			});
 		}
 	}
-	
 	
 	@Override
 	public <T extends NMEASentence> void  subscribe(Class<T> key, INMEAListener listener) {

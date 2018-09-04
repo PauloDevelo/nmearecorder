@@ -23,7 +23,8 @@ public class GPGLL extends NMEASentence {
 	@nmea(pos=6)
 	private Status status;
 	
-	public GPGLL(StringBuilder sentence) {
+	public GPGLL(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

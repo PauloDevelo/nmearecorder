@@ -18,8 +18,9 @@ public class SDDPT extends NMEASentence {
 	@nmea(pos=2)
 	private float offsetFromTransducer = Float.NaN;
 	
-	public SDDPT(StringBuilder nmeaSentence) {
-		parseNMEASentence(nmeaSentence, this);
+	public SDDPT(long nanotime, StringBuilder sentence) {
+		super(nanotime);
+		parseNMEASentence(sentence, this);
 	}
 
 	/**

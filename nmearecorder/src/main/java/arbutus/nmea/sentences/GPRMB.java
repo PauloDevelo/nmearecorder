@@ -47,7 +47,8 @@ public class GPRMB extends NMEASentence {
 	@nmea(pos=12)
 	private Status arrivalStatus;
 	
-	public GPRMB(StringBuilder sentence) {
+	public GPRMB(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

@@ -23,7 +23,8 @@ public class WIMWV extends NMEASentence {
 	@nmea(pos=5)
 	private Status status;
 	
-	public WIMWV(StringBuilder sentence) {
+	public WIMWV(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence,this);
 	}
 

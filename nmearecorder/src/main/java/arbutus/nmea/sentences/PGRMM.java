@@ -13,7 +13,8 @@ public class PGRMM extends NMEASentence {
 	@nmea(pos=1)
 	private String mapDatum = null;
 	
-	public PGRMM(StringBuilder sentence) {
+	public PGRMM(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

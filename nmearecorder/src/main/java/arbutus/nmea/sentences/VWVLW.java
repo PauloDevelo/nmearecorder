@@ -17,7 +17,8 @@ public class VWVLW extends NMEASentence {
 	@nmea(pos=3)
 	private float distSinceResetNm = Float.NaN;
 	
-	public VWVLW(StringBuilder sentence) {
+	public VWVLW(long nanotime, StringBuilder sentence) {
+		super(nanotime);
 		parseNMEASentence(sentence, this);
 	}
 

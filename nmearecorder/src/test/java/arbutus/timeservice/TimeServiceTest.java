@@ -107,7 +107,7 @@ public class TimeServiceTest {
 	@Test
 	public void GetUTCDateTime_AfterReceivingCorruptedData_ShouldStillReturnTheCorrectTime() throws ParseException {
 		//Arrange
-		GPRMC gprmc = new GPRMC(new StringBuilder("$GPRMC,193134.00,A,2219.93324,S,16649.39025,E,0.052,,,,,D*64"));
+		GPRMC gprmc = new GPRMC(0, new StringBuilder("$GPRMC,193134.00,A,2219.93324,S,16649.39025,E,0.052,,,,,D*64"));
 		
 		try {
 			TimeUnit.SECONDS.sleep(7);
