@@ -1,5 +1,6 @@
 package arbutus.timeservice;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,40 +20,40 @@ import arbutus.nmea.service.INMEAService;
 import arbutus.service.IService;
 import arbutus.service.ServiceManager;
 import arbutus.service.ServiceState;
-import arbutus.util.OSValidator;
 import arbutus.util.PropertiesFile;
 import arbutus.util.Utils;
 
 public class TimeService implements IService, ITimeService, INMEAListener {
 	private static Logger log = Logger.getLogger(TimeService.class);
-	private PropertiesFile properties = null;
 	
 	private ServiceState state = ServiceState.STOPPED;
 	private List<Long> referenceTimes = new ArrayList<Long>();
 	
 	private long referenceTime = 0;
 	
-	final private int synced;
-	final private int synchro;
-	final private int resync;
+	private TimeServiceContext context = null;
 
-	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledExecutorService executor = null;
+	
+	public TimeService(TimeServiceContext context) {
+		this.context = context;
+	}
 	
 	public TimeService() {
 		String fileSep = System.getProperty("file.separator");
 		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "timeservice.properties";
 				 
-		properties = PropertiesFile.getPropertiesVM(propertiesPath);
+		PropertiesFile properties = PropertiesFile.getPropertiesVM(propertiesPath);
 		
-		synced = properties.getValueInt("synced", 4);
-		synchro = properties.getValueInt("synchronized", 30);
-		resync = properties.getValueInt("resynchronized", 86400);
+		this.context = new TimeServiceContext(properties.getValueInt("synced", 4), 
+				properties.getValueInt("synchronized", 30), 
+				properties.getValueInt("resynchronized", 86400), 
+				properties.getValue("exec"));
 	}
 
 	@Override
 	public synchronized boolean isSynchonized() {
-		
-		return referenceTimes.size() > synced;
+		return referenceTimes.size() > context.getSynced();
 	}
 
 	@Override
@@ -94,71 +95,64 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 		}
 	}
 
-	private void setSystemTime() {
-		try {
-			int count = 0;
-			boolean success = false;
-			while(success == false && count < 5) {
-				count++;
+	private Boolean setSystemTime() throws IllegalStateException, IOException, InterruptedException {
+		int count = 0;
+		boolean success = false;
+		while(success == false && count < 5) {
+			count++;
+
+			try {
+				StringBuilder exec = getFormatedSyncCommand(this.getUTCDateTime());
+				log.info("System date synchrnoisation: " + exec);
+				success = Utils.execCommandSync(exec, 4);
 				
-				if(this.isSynchonized()) {
-					
-					StringBuilder exec = formatSyncCommand(this.getUTCDateTime());
-					
-					log.info("System date synchrnoisation: " + exec);
-					success = Utils.execCommandSync(exec);
-					
-					if(success) {
-		            	log.info("System date synchronized with the GPS succesfully.");
-		            }
-		            else {
-		            	log.warn("System date synchronization failed.");
-		            }
-					
+				if(success) {
+	            	log.info("System date synchronized with the GPS succesfully.");
+	            }
+	            else {
+	            	log.warn("System date synchronization failed.");
+	            }
+			} 
+			catch (SynchronizationException e) {
+				log.warn("TimeService is not yet synchronized with the GPS. Impossible to synchonized the system.");
+			}
+			
+			if(!success) {
+				if(count < 5) {
+					log.warn("It will try again in 5 seconds.");
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						count = 5;
+					}
 				}
 				else {
-					log.warn("TimeService is not yet synchronized with the GPS. Impossible to synchonized the system.");
-				}
-				
-				if(!success) {
-					if(count < 5) {
-						log.warn("It will try again in 5 seconds.");
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-							count = 5;
-						}
-					}
-					else {
-						log.warn("It will try again in " + resync + " seconds.");
-					}
+					log.warn("It will try again in " + context.getResync() + " seconds.");
 				}
 			}
 		}
-		catch(Exception ex) {
-			log.error("An error occured when synchronizing the system date.", ex);
-		}
+		
+		return success;
 	}
 	
-	private StringBuilder formatSyncCommand(Date dateTime) throws InvalidPropertiesFormatException {
+	private StringBuilder getFormatedSyncCommand(Date dateTime) throws InvalidPropertiesFormatException {
 		StringBuilder exec = new StringBuilder();
 		
 		if(dateTime == null) {
 			throw new IllegalArgumentException("The date cannot be null.");
 		}
-		
-		String execStr = properties.getValue("exec");
-		int firstIndex = execStr.indexOf('"');
-		int lastIndex = execStr.lastIndexOf('"');
+	
+		int firstIndex = context.getExecStr().indexOf('"');
+		int lastIndex = context.getExecStr().lastIndexOf('"');
 		
 		if(firstIndex == -1 || firstIndex == lastIndex) {
-			throw new InvalidPropertiesFormatException("The property exec [" + execStr + "] should contains a pair of \" within is the date format.");
+			throw new InvalidPropertiesFormatException("The property exec [" + context.getExecStr() + "] should contains a pair of \" within is the date format.");
 		}
 		
-		SimpleDateFormat df = new SimpleDateFormat(execStr.substring(firstIndex + 1, lastIndex));
+		SimpleDateFormat df = new SimpleDateFormat(context.getExecStr().substring(firstIndex + 1, lastIndex));
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		
-		exec.append(execStr.subSequence(0, firstIndex + 1)).append(df.format(dateTime)).append(execStr.substring(lastIndex));
+		exec.append(context.getExecStr().subSequence(0, firstIndex + 1)).append(df.format(dateTime)).append(context.getExecStr().substring(lastIndex));
 
 		return exec;
 	}
@@ -173,14 +167,20 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 		if(state == ServiceState.STOPPED) {
 			INMEAService nmeaService = ServiceManager.getInstance().getService(INMEAService.class);
 			nmeaService.subscribe(GPRMC.class, this);
-			
-			if(OSValidator.isUnix()) {
-				Runnable setSystemTimeTask = () -> {
+
+			Runnable setSystemTimeTask = () -> {
+				try {
 					this.setSystemTime();
-				};
-				executor.scheduleAtFixedRate(setSystemTimeTask, synchro, resync, TimeUnit.SECONDS);
-			}
+				} catch (Exception e) {
+					log.error("Impossible to synchronize the system time.", e);
+					Thread t = Thread.currentThread();
+					t.getUncaughtExceptionHandler().uncaughtException(t, e);
+				} 
+			}; 
 			
+			executor = Executors.newSingleThreadScheduledExecutor();
+			executor.scheduleAtFixedRate(setSystemTimeTask, context.getSynchro(), context.getResync(), TimeUnit.SECONDS);
+
 			state = ServiceState.STARTED;
 		}
 	}
@@ -200,7 +200,11 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 				} catch (InterruptedException e) {
 					executor.shutdownNow();
 				}
+				executor = null;
 			}
+			
+			referenceTimes.clear();
+			referenceTime = 0;
 			
 			state = ServiceState.STOPPED;
 		}

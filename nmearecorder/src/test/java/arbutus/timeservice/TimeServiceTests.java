@@ -16,7 +16,9 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import arbutus.nmea.sentences.GPRMC;
+import arbutus.nmea.service.INMEAService;
 import arbutus.nmea.service.NMEAService;
+import arbutus.service.ServiceManager;
 import arbutus.test.ToolBox;
 import arbutus.timeservice.SynchronizationException;
 import arbutus.timeservice.TimeService;
@@ -24,28 +26,26 @@ import arbutus.timeservice.TimeService;
 public class TimeServiceTests {
 	static SimpleDateFormat format = new SimpleDateFormat("dd'/'MM'/'yyyy HH':'mm':'ss'.'SSSX");
 	
+	private ITimeService timeService = null;
+	
 	@BeforeClass
 	public static void ArrangeTimeSeriveTests() {
 		format.setTimeZone(TimeZone.getTimeZone("UTC"));
+		
+		ServiceManager.getInstance().register(INMEAService.class, new NMEAService());
+		ServiceManager.getInstance().register(ITimeService.class, new TimeService(new TimeServiceContext(4, 10, 25, "echo \"yyyy/MM/dd HH:mm:ss.SSS+00:00\"")));
 	}
-	
-	private NMEAService nmeaService = null;
-	private TimeService timeService = null;
-	
+
 	@Before
 	public void arrange() {
-		nmeaService = new NMEAService();
-		timeService = new TimeService();
+		ServiceManager.getInstance().startServices();
 		
-		nmeaService.subscribe(GPRMC.class, timeService);
-		
-		nmeaService.start();
+		timeService = ServiceManager.getInstance().getService(ITimeService.class);
 	}
 	
 	@After
 	public void tearDown() {
-		nmeaService.stop();
-		timeService.stop();
+		ServiceManager.getInstance().stopServices();
 	}
 	
 	@Test
@@ -116,8 +116,7 @@ public class TimeServiceTests {
 			long timeDiffWithSystem = System.currentTimeMillis() - timeService.getUTCDateTime().getTime();
 
 			// Act
-			
-			timeService.onNewNMEASentence(gprmc);
+			TimeService.class.cast(timeService).onNewNMEASentence(gprmc);
 			
 			long dev = timeDiffWithSystem - (System.currentTimeMillis() - timeService.getUTCDateTime().getTime());
 			
@@ -129,6 +128,7 @@ public class TimeServiceTests {
 		}
 	}
 	
+	
 	@Test
 	public void formatSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() {
 		// Arrange
@@ -136,29 +136,22 @@ public class TimeServiceTests {
 		
 		// Act
 		try {
-			StringBuilder cmd = ToolBox.callPrivateMethod(StringBuilder.class, timeService, "formatSyncCommand", Date.class, aDate);
+			StringBuilder cmd = ToolBox.callPrivateMethod(StringBuilder.class, timeService, "getFormatedSyncCommand", Date.class, aDate);
 			
 			// Assert
-			assertEquals("date -s \"2018/09/02 06:03:38.178+00:00\"",  cmd.toString());
+			assertEquals("echo \"2018/09/02 06:03:38.178+00:00\"",  cmd.toString());
 		} catch (Throwable e) {
-			fail("Should not throw anu exception");
+			fail("Should not throw an exception " + e.getMessage());
 		}
 	}
 	
-	@Test
-	public void formatSyncCommand_WithADateNull_ShouldReturnAnEmptyCommand() {
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void formatSyncCommand_WithADateNull_ShouldReturnAnEmptyCommand() throws Throwable {
 		// Arrange
 		Date aDate = null;
-		
-		try {
-			// Act
-			ToolBox.callPrivateMethod(StringBuilder.class, timeService, "formatSyncCommand", Date.class, aDate);
-			fail("Should have thrown an IllegalArgumentException");
-		}
-		catch(Throwable ex)
-		{
-			// Assert
-			assertTrue("Should have thrown an IllegalArgumentException", IllegalArgumentException.class.isInstance(ex));
-		}
+
+		// Act
+		ToolBox.callPrivateMethod(StringBuilder.class, timeService, "getFormatedSyncCommand", Date.class, aDate);
 	}
 }

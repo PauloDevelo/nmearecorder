@@ -2,32 +2,25 @@ package arbutus.util;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 public class UtilsTests {
 	
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=IllegalStateException.class)
 	public void execCommandSync_EmptyCommand_ShouldThrowAnIllegalArgumentException() {
 		// Arrange 
 		StringBuilder cmd = new StringBuilder();
 		
 		// Act
-		Utils.execCommandSync(cmd);
+		try {
+			Utils.execCommandSync(cmd, 4);
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 		// Assert
-		fail("Executing an empting command should throw an IllegalArgumentException");
+		fail("Executing under Windows is not supported");
 	}
-	
-	@Test
-	public void execCommandSync_java_version_ShoudlReturnTrue() {
-		// Arrange 
-		StringBuilder cmd = new StringBuilder("java -version");
-		
-		// Act
-		boolean success = Utils.execCommandSync(cmd);
-		
-		// Assert
-		assertTrue("java -version should execute succesfully", success);
-	}
-
 }
