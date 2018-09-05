@@ -53,7 +53,7 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 
 	@Override
 	public synchronized boolean isSynchonized() {
-		return referenceTimes.size() > context.getSynced();
+		return referenceTimes.size() >= context.getSynced();
 	}
 
 	@Override
