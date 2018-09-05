@@ -192,6 +192,8 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 			executor.scheduleAtFixedRate(setSystemTimeTask, context.getSynchro(), context.getResync(), TimeUnit.SECONDS);
 
 			state = ServiceState.STARTED;
+			
+			log.info("TimeService stopped");
 		}
 	}
 
@@ -217,6 +219,8 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 			referenceTime = 0;
 			
 			state = ServiceState.STOPPED;
+			
+			log.info("TimeService stopped");
 		}
 	}
 }

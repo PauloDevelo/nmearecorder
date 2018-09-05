@@ -87,6 +87,8 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				influxDB.enableBatch(BatchOptions.DEFAULTS.exceptionHandler(
 						(failedPoints, throwable) -> { this.logInfluxError(failedPoints, throwable); })
 						);
+				
+				log.info("InfluxdbRepository started");
 			}
 			catch(Exception ex) {
 				log.fatal("Error when starting the InfluxDb repo as a service.", ex);
@@ -102,6 +104,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 	public void stop() {
 		if(getState() == ServiceState.STARTED) {
 			closeInfluxDb();
+			log.info("InfluxdbRepository stopped");
 		}
 		else {
 			log.warn("Attempt to stop influxdbRepository although it is already stopped.");
