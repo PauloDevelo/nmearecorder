@@ -1,7 +1,9 @@
 package arbutus.nmea.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat; 
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,7 @@ import arbutus.nmea.sentences.GPRMC;
 import arbutus.nmea.sentences.NMEASentence;
 import arbutus.nmea.service.INMEAListener;
 import arbutus.nmea.service.NMEAService;
+import arbutus.nmea.service.connectors.NMEAReaderStub;
 import arbutus.service.ServiceState;
 
 public class NMEAServiceTest {
@@ -20,7 +23,7 @@ public class NMEAServiceTest {
 	
 	@Before
 	public void setup() {
-		nmeaService = new NMEAService();
+		nmeaService = new NMEAService(NMEAReaderStub.class);
 	}
 	
 	@After
@@ -63,8 +66,8 @@ public class NMEAServiceTest {
 			e.printStackTrace();
 		}
 		
-		// Arrange
-		assertTrue("The receiver should have received at least one message.", receiver.counter > 0);
+		// Assert
+		assertThat("The receiver should have received at least one message.", receiver.counter, is(greaterThanOrEqualTo(4)));
 	}
 	
 	@Test

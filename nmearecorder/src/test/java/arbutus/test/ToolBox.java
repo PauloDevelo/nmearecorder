@@ -2,6 +2,7 @@ package arbutus.test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 public class ToolBox {
 	public static <T, U, V> T callPrivateMethod(Class<T> returnType, U instance, String methodName, Class<V> paramType, V param) throws Throwable {
@@ -17,6 +18,14 @@ public class ToolBox {
 		}
 		catch (NoSuchMethodException | SecurityException | IllegalAccessException e) {
 			throw e;
+		}
+	}
+	
+	public static void wait(int seconds) {
+		try {
+			TimeUnit.SECONDS.sleep(seconds);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 }

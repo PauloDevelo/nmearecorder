@@ -6,6 +6,7 @@ import arbutus.influxdb.IInfluxdbRepository;
 import arbutus.influxdb.InfluxdbRepository;
 import arbutus.nmea.service.INMEAService;
 import arbutus.nmea.service.NMEAService;
+import arbutus.nmea.service.connectors.TCPReader;
 import arbutus.rtmodel.Vessel;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
@@ -40,7 +41,7 @@ public class BlackBox {
 		try {
 			ServiceManager srvMgr = ServiceManager.getInstance();
 			
-			srvMgr.register(INMEAService.class, new NMEAService());
+			srvMgr.register(INMEAService.class, new NMEAService(TCPReader.class));
 			srvMgr.register(ITimeService.class, new TimeService());
 			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository());
 			

@@ -13,6 +13,7 @@ import arbutus.influxdb.IInfluxdbRepository;
 import arbutus.influxdb.InfluxdbRepository;
 import arbutus.nmea.service.INMEAService;
 import arbutus.nmea.service.NMEAService;
+import arbutus.nmea.service.connectors.NMEAReaderStub;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
@@ -24,7 +25,7 @@ public class VesselTest {
 	public static void InitTests() {
 		ServiceManager srvMgr = ServiceManager.getInstance();
 		
-		srvMgr.register(INMEAService.class, new NMEAService());
+		srvMgr.register(INMEAService.class, new NMEAService(NMEAReaderStub.class));
 		srvMgr.register(ITimeService.class, new TimeService());
 		srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository());
 		

@@ -1,9 +1,12 @@
 package arbutus.nmea.service;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 
 import org.apache.log4j.Logger;
 
@@ -15,17 +18,33 @@ import arbutus.nmea.sentences.SDDPT;
 import arbutus.nmea.sentences.VWMTW;
 import arbutus.nmea.sentences.VWVHW;
 import arbutus.nmea.sentences.WIMWV;
+import arbutus.nmea.service.connectors.NMEAReader;
+import arbutus.nmea.service.connectors.TCPReader;
 import arbutus.service.IService;
 import arbutus.service.ServiceState;
-import arbutus.util.TCPReader;
+
+import java.util.function.BiConsumer;
 
 public class NMEAService implements IService, INMEAService {
 	private static Logger log = Logger.getLogger(NMEAService.class);
 	
-	private TCPReader tcpReader = null;
+	private NMEAReader nmeaReader = null;
 	private Thread threadTcpReader = null;
 	
 	private HashMap<Class<? extends NMEASentence>, List<INMEAListener>> _subscribers = new HashMap<>(); 
+	
+	public NMEAService(Class<? extends NMEAReader> typeReader) {
+		BiConsumer<Long, StringBuilder> consumer = this::onReceiveNMEASentence;
+		
+		Constructor<? extends NMEAReader> cons;
+		try {
+			cons = typeReader.getDeclaredConstructor(BiConsumer.class);
+			nmeaReader = cons.newInstance(consumer);
+		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			log.fatal("Impossible to build the NMEA reader of type " + typeReader.getName(), e);
+			nmeaReader = null;
+		}
+	}
 	
 	private void onReceiveNMEASentence(Long receptionNanoTime, StringBuilder nmeaSentence) {
 		if(nmeaSentence == null)
@@ -124,16 +143,17 @@ public class NMEAService implements IService, INMEAService {
 
 	@Override
 	public void start() {
-		tcpReader = new TCPReader(this::onReceiveNMEASentence);
-		threadTcpReader = new Thread(tcpReader);
-		
-		threadTcpReader.start();
+		if(nmeaReader != null) {
+			threadTcpReader = new Thread(nmeaReader);
+			
+			threadTcpReader.start();
+		}
 	}
 
 	@Override
 	public void stop() {
 		if (threadTcpReader != null && threadTcpReader.isAlive()) {
-			tcpReader.setInterrupted(true);
+			nmeaReader.setInterrupted(true);
 		}
 	}
 

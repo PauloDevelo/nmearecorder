@@ -13,7 +13,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import arbutus.nmea.sentences.GPRMC;
 import arbutus.nmea.service.INMEAListener;
@@ -180,11 +179,11 @@ public class TimeServiceTest {
 		
 		long nanoTime = System.nanoTime();
 		this.timeservice.onNewNMEASentence(new GPRMC(nanoTime, new StringBuilder("$GPRMC,033223.00,A,1805.48706,S,17632.90433,E,6.456,246.17,040818,,,D*7A")));
-		this.wait(1);
+		ToolBox.wait(1);
 		this.timeservice.onNewNMEASentence(new GPRMC(nanoTime + 1000000000L, new StringBuilder("$GPRMC,033224.00,A,1805.48763,S,17632.90251,E,6.869,254.64,040818,,,D*7B")));
-		this.wait(1);
+		ToolBox.wait(1);
 		this.timeservice.onNewNMEASentence(new GPRMC(nanoTime + 2000000000L, new StringBuilder("$GPRMC,033225.00,A,1805.48824,S,17632.90062,E,6.904,249.55,040818,,,D*70")));
-		this.wait(1);
+		ToolBox.wait(1);
 		GPRMC correctRMC = new GPRMC(nanoTime + 3000000000L, new StringBuilder("$GPRMC,033226.00,A,1805.48891,S,17632.89860,E,7.527,252.95,040818,,,D*75"));
 		this.timeservice.onNewNMEASentence(correctRMC);
 		
@@ -251,11 +250,5 @@ public class TimeServiceTest {
 		ToolBox.callPrivateMethod(StringBuilder.class, this.timeservice, "getFormatedSyncCommand", Date.class, aDate);
 	}
 	
-	private void wait(int seconds) {
-		try {
-			TimeUnit.SECONDS.sleep(seconds);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+	
 }

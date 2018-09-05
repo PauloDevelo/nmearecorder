@@ -1,4 +1,4 @@
-package arbutus.util;
+package arbutus.nmea.service.connectors;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,18 +14,16 @@ import java.util.function.BiConsumer;
 
 import org.apache.log4j.Logger;
 
-public class TCPReader implements Runnable {
+import arbutus.util.PropertiesFile;
+
+public class TCPReader extends NMEAReader {
 
 	private static Logger log = Logger.getLogger(TCPReader.class);
-	
-	private boolean isInterrupted = false;
 
 	private PropertiesFile properties = null;
 	
-	private BiConsumer<Long, StringBuilder> consumer = null;
-	
 	public TCPReader(BiConsumer<Long, StringBuilder> consumer) {
-		this.consumer = consumer;
+		super(consumer);
 		
 		String fileSep = System.getProperty("file.separator");
 		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "tcpnetwork.properties";
@@ -35,26 +33,10 @@ public class TCPReader implements Runnable {
 		properties = PropertiesFile.getPropertiesVM(propertiesPath);
 	}
 	
-	/**
-	 * @return the isInterrupted
-	 */
-	public synchronized boolean isInterrupted() {
-		return isInterrupted;
-	}
-
-	/**
-	 * @param isInterrupted the isInterrupted to set
-	 */
-	public synchronized void setInterrupted(boolean isInterrupted) {
-		this.isInterrupted = isInterrupted;
-	}
-	
 	@Override
 	public void run() {
-		
-		
 		try (Socket socket = new Socket(properties.getValue("host"), properties.getValueInt("port", 10110));
-			 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
 			
 			ExecutorService executor = Executors.newFixedThreadPool(15);
 
@@ -64,7 +46,7 @@ public class TCPReader implements Runnable {
 				long nanoTime = System.nanoTime();
 				
 				if(cfs.size() < 40) {
-					cfs.add(CompletableFuture.runAsync(() -> this.consumer.accept(nanoTime, msg), executor));
+					cfs.add(CompletableFuture.runAsync(() -> this.getConsumer().accept(nanoTime, msg), executor));
 				}
 				else {
 					log.warn("More than 40 CompletableFuture in progress: " + cfs.size());

@@ -36,14 +36,14 @@ public class InfluxdbRepositoryTest {
 	}
 	
 	@Test
-	public void Start_ShouldBeSarted() {
+	public void Start_ShouldNotBeSarted() {
 		// Arrange
 		
 		// Act
 		repository.start();
 		
 		// Assert
-		assertEquals("Because the service should be started", ServiceState.STARTED, repository.getState());
+		assertEquals("Because the service should be stopped, influxdb being inaccessible from here", ServiceState.STOPPED, repository.getState());
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ public class InfluxdbRepositoryTest {
 	}
 	
 	@Test
-	public void Write_ShouldBeok() {
+	public void Write_ShouldNotBeok() {
 		// Arrange
 		repository.start();
 		HashMap<String, Float> fields = new HashMap<String, Float>();
@@ -69,7 +69,7 @@ public class InfluxdbRepositoryTest {
 		repository.addPoint("test", new Date(System.currentTimeMillis()), fields);
 		
 		// Assert
-		assertEquals("Because the service should be started", ServiceState.STARTED, repository.getState());
+		assertEquals("Because the service should be stopped from here", ServiceState.STOPPED, repository.getState());
 	}
 
 }
