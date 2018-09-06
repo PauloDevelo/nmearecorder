@@ -5,7 +5,14 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	GPRMCTest.class
+	GPRMCTest.class,
+	GPVTGTest.class,
+	HCHDGTest.class,
+	SDDPTTest.class,
+	VWMTWTest.class,
+	WIMWVTest.class,
+	VWVHWTest.class,
+	
 })
 public class NMEASentencesSuite {
 

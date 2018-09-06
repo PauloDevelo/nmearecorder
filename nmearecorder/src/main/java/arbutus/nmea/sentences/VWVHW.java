@@ -1,6 +1,7 @@
 package arbutus.nmea.sentences;
 
 //VHW Water Speed and Heading
+
 //$--VHW,x.x,T,x.x,M,x.x,N,x.x,K*hh
 //		 1   2 3   4 5   6 7   8 9
 //1) Degress True
@@ -13,6 +14,7 @@ package arbutus.nmea.sentences;
 //8) K = Kilometres
 //9) Checksum
 
+//$VWVHW,,,,,261,N,3.2,K*4D
 //$VWVHW,,,,,0.00,N,0.00,K*4D
 public class VWVHW extends NMEASentence {
 	public static final String sticker = "$VWVHW";
