@@ -148,6 +148,8 @@ public class NMEAService implements IService, INMEAService {
 			
 			threadTcpReader.start();
 		}
+
+		log.info("NMEAService started");
 	}
 
 	@Override
@@ -155,6 +157,8 @@ public class NMEAService implements IService, INMEAService {
 		if (threadTcpReader != null && threadTcpReader.isAlive()) {
 			nmeaReader.setInterrupted(true);
 		}
+		
+		log.info("NMEAService stopped");
 	}
 
 }

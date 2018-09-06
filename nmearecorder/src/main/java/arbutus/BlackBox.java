@@ -48,7 +48,7 @@ public class BlackBox {
 			srvMgr.startServices();
 			
 			arbutus = new Vessel();
-			
+			log.info("NMEARecorder service started");
 			while (!Thread.interrupted()) {
 				try {
 					Thread.sleep(1000);
@@ -66,7 +66,7 @@ public class BlackBox {
 				arbutus.unsubscribe();
 
 			ServiceManager.getInstance().stopServices();
-			log.debug("Services stopped");
+			log.info("NMEARecorder service stopped");
 			
 			System.exit(exitStatus);
 		}
