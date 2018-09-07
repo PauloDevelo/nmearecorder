@@ -2,8 +2,6 @@ package arbutus.rtmodel;
 
 import java.util.Timer;
 
-import org.apache.log4j.Logger;
-
 import arbutus.influxdb.InfluxField;
 import arbutus.influxdb.InfluxTask;
 import arbutus.nmea.sentences.*;
@@ -13,8 +11,6 @@ import arbutus.service.ServiceManager;
 import arbutus.util.PropertiesFile;
 
 public class Vessel implements INMEAListener{
-	private static Logger log = Logger.getLogger(Vessel.class);
-	
 	private PropertiesFile properties = null;
 	
 	private INMEAService nmeaService = null;

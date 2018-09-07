@@ -249,6 +249,4 @@ public class TimeServiceTest {
 		// Act
 		ToolBox.callPrivateMethod(StringBuilder.class, this.timeservice, "getFormatedSyncCommand", Date.class, aDate);
 	}
-	
-	
 }

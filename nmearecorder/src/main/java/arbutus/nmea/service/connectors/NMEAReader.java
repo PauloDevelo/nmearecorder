@@ -2,11 +2,7 @@ package arbutus.nmea.service.connectors;
 
 import java.util.function.BiConsumer;
 
-import org.apache.log4j.Logger;
-
 public abstract class NMEAReader implements Runnable {
-	private static Logger log = Logger.getLogger(NMEAReader.class);
-	
 	private BiConsumer<Long, StringBuilder> consumer = null;
 	
 	private boolean isInterrupted = false;

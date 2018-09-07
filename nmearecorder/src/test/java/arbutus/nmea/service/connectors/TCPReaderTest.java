@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import arbutus.nmea.service.connectors.TCPReader;
@@ -25,6 +26,7 @@ public class TCPReaderTest {
 	}
 	
 	@Test
+	@Ignore
 	public void RunTCPReader() {
 		
 		// Arrange 
@@ -49,10 +51,11 @@ public class TCPReaderTest {
 		
 		// Assert
 		assertNotNull("The TCPReader did no build", tcpReader);
-		assertThat("TCPReader did not send messages", counter, is(equalTo(0)));
+		assertThat("TCPReader did send messages", counter, is(greaterThan(0)));
 	}
 	
 	@Test
+	@Ignore
 	public void TCPReader_RunThenStop_ShouldStopImmediatelyAfterInterruption() {
 		// Arrange 
 		counter = 0;
@@ -82,11 +85,12 @@ public class TCPReaderTest {
 		}
 		
 		// Assert
-		//assertTrue("The thread is not stopped", !tcpReaderThread.isAlive());
-		assertTrue("Some messages arrivent after the interruption.", Math.abs(counter - counterBefore) <= 1);
+		assertTrue("The thread is not stopped", !tcpReaderThread.isAlive());
+		assertTrue("Some messages should not arrive after the interruption.", Math.abs(counter - counterBefore) <= 1);
 	}
 	
 	@Test
+	@Ignore
 	public void TCPReader_WithSlowConsumer_ShouldNotStackMoreThan20Call() {
 		// Arrange 
 		counter = 0;

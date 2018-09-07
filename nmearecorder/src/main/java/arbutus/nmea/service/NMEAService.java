@@ -19,11 +19,8 @@ import arbutus.nmea.sentences.VWMTW;
 import arbutus.nmea.sentences.VWVHW;
 import arbutus.nmea.sentences.WIMWV;
 import arbutus.nmea.service.connectors.NMEAReader;
-import arbutus.nmea.service.connectors.TCPReader;
 import arbutus.service.IService;
 import arbutus.service.ServiceState;
-
-import java.util.function.BiConsumer;
 
 public class NMEAService implements IService, INMEAService {
 	private static Logger log = Logger.getLogger(NMEAService.class);
