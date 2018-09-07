@@ -193,7 +193,7 @@ public class TimeService implements IService, ITimeService, INMEAListener {
 
 			state = ServiceState.STARTED;
 			
-			log.info("TimeService stopped");
+			log.info("TimeService started");
 		}
 	}
 
