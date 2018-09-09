@@ -2,6 +2,9 @@ package arbutus.rtmodel;
 
 import static org.junit.Assert.assertTrue;
 
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat; 
+
 import java.util.Date;
 import java.util.HashMap;
 
@@ -114,6 +117,51 @@ public class VesselTest {
 		
 		// Assert
 		context.assertIsSatisfied();
+	}
+	
+	@Test
+	public void RunArbutus_ShouldReceiveSomeWindInformation() {
+		// Arrange
+		context.checking(new Expectations() 
+		{{
+				ignoring(influxService).start();
+				ignoring(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
+				ignoring(influxService).stop();
+		}});
+		
+		ServiceManager.getInstance().startServices();
+		arbutus = new Vessel();
+		
+		ToolBox.wait(12);
+		
+		// Act
+		
+		// Assert
+		assertThat(arbutus.getRelWindSpeed(), is(not(Float.NaN)));
+	}
+	
+	
+	@Test
+	public void RunArbutus_WithASudenStrongSpeed_ShouldCleanSpikes() {
+		// Arrange
+		context.checking(new Expectations() 
+		{{
+				ignoring(influxService).start();
+				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
+				ignoring(influxService).stop();
+		}});
+		
+		ServiceManager.getInstance().startServices();
+		arbutus = new Vessel();
+		
+		ToolBox.wait(12);
+		
+		// Act
+		
+		// Assert
+		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,299,R,90,N,A*0D");
+		ToolBox.wait(1);
+		assertThat(arbutus.getRelWindSpeed(), is(equalTo(Float.NaN)));
 	}
 
 }
