@@ -63,7 +63,7 @@ public class InfluxTask<T> extends TimerTask{
 					Method getter = type.getDeclaredMethod(getGetterName(f));
 					Float value = Float.class.cast(getter.invoke(instance));
 					
-					if(value != null) {
+					if( value != null && !Float.isNaN(value)) {
 						influxFields.put(influxAnnotation.name(), value);
 					}
 					else {

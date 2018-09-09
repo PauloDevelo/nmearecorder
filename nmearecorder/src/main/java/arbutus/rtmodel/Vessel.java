@@ -90,6 +90,9 @@ public class Vessel implements INMEAListener{
 						setPosition(rmc.getLatitudeDegDec(), rmc.getLongitudeDegDec());
 				}
 			}
+			else {
+				setPosition(Float.NaN, Float.NaN);
+			}
 		}
 		else if(sentence instanceof GPVTG) {
 			GPVTG vtg = GPVTG.class.cast(sentence);	
@@ -135,10 +138,15 @@ public class Vessel implements INMEAListener{
 		}
 		else if(sentence instanceof WIMWV) {
 			WIMWV mwv = WIMWV.class.cast(sentence);
-			
-			if(!mwv.isTrue()) {
-				if(!Float.isNaN(mwv.getWindAngle()) && !Float.isNaN(mwv.getWindSpeedKn()))
-					setRelWind(mwv.getWindAngle(), mwv.getWindSpeedKn());
+			if(mwv.getStatus() == Status.DataValid) {
+				if(!mwv.isTrue()) {
+					
+					if(!Float.isNaN(mwv.getWindAngle()) && !Float.isNaN(mwv.getWindSpeedKn()))
+						setRelWind(mwv.getWindAngle(), mwv.getWindSpeedKn());
+				}
+			}
+			else {
+				setRelWind(Float.NaN, Float.NaN);
 			}
 		}
 	}
@@ -255,8 +263,7 @@ public class Vessel implements INMEAListener{
 	 */
 	private synchronized void setRelWind(float relWindDir, float relWindSpeed) {
 		this.relWindSpeed = relWindSpeed;
-		this.relWindDir = relWindDir;
-	}
+		this.relWindDir = relWindDir;	}
 
 	/**
 	 * @return the relWindDir
@@ -264,5 +271,6 @@ public class Vessel implements INMEAListener{
 	public synchronized float getRelWindDir() {
 		return relWindDir;
 	}
+	
 	
 }
