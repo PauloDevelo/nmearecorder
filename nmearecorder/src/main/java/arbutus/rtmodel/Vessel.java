@@ -1,5 +1,8 @@
 package arbutus.rtmodel;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
 import java.util.Timer;
 
 import arbutus.influxdb.InfluxField;
@@ -40,6 +43,7 @@ public class Vessel implements INMEAListener{
 	
 	@InfluxField(name="relWindSpeed")
 	private float relWindSpeed = Float.NaN;
+	private List<Float> cleanedRelWindSpeedHisto = new ArrayList<Float>();
 	
 	@InfluxField(name="relWindDir")
 	private float relWindDir = Float.NaN;
@@ -262,8 +266,39 @@ public class Vessel implements INMEAListener{
 	 * @param relWindSpeed the relWindSpeed to set
 	 */
 	private synchronized void setRelWind(float relWindDir, float relWindSpeed) {
-		this.relWindSpeed = relWindSpeed;
-		this.relWindDir = relWindDir;	}
+		this.relWindSpeed = cleanRelWindSpeed(relWindSpeed);
+		this.relWindDir = relWindDir;
+	}
+
+	private float cleanRelWindSpeed(float newRelWindSpeed) {
+		
+		if (Float.isNaN(newRelWindSpeed))
+		{
+			return Float.NaN;
+		}
+		
+		float maxRelWindSpeed = getMaxRelWindSpeedFromHisto();
+		if(Float.isNaN(maxRelWindSpeed) || newRelWindSpeed < 5 * maxRelWindSpeed) {
+			cleanedRelWindSpeedHisto.add(newRelWindSpeed);
+			if(cleanedRelWindSpeedHisto.size() > 10) {
+				cleanedRelWindSpeedHisto.remove(0);
+			}
+			return newRelWindSpeed;
+		}
+		else {
+			return Float.NaN;
+		}
+	}
+
+	private float getMaxRelWindSpeedFromHisto() {
+		OptionalDouble maxSpeed = cleanedRelWindSpeedHisto.stream().mapToDouble(speed -> speed).max();
+		
+		if(maxSpeed.isPresent())
+			return (float)maxSpeed.getAsDouble();
+		else {
+			return Float.NaN;
+		}
+	}
 
 	/**
 	 * @return the relWindDir

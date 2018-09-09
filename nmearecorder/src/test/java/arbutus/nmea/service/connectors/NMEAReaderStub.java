@@ -8,7 +8,13 @@ import arbutus.test.ToolBox;
 
 public class NMEAReaderStub extends NMEAReader {
 	
+	private static NMEAReaderStub currentInstance = null;
+	public static NMEAReaderStub getCurrentInstance() {
+		return currentInstance;
+	}
+	
 	private List<String> gprmclist = new ArrayList<String>();
+	private List<String> windlist = new ArrayList<String>();
 
 	public NMEAReaderStub(BiConsumer<Long, StringBuilder> consumer) {
 		super(consumer);
@@ -23,15 +29,37 @@ public class NMEAReaderStub extends NMEAReader {
 		gprmclist.add("$GPRMC,033315,A,1805.5203,S,17632.8106,E,6.2,239.5,040818,12.2,E,A*3A");
 		gprmclist.add("$GPRMC,033316.00,A,1805.51864,S,17632.80965,E,6.267,245.39,040818,,,D*7A");
 		gprmclist.add("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,5.551,246.69,040818,,,D*79");
+		
+		windlist.add("$WIMWV,305,R,16.5,N,A*09");
+		windlist.add("$WIMWV,306,R,16.8,N,A*07");
+		windlist.add("$WIMWV,308,R,17.2,N,A*02");
+		windlist.add("$WIMWV,307,R,17.5,N,A*0A");
+		windlist.add("$WIMWV,312,R,18.0,N,A*04");
+		windlist.add("$WIMWV,311,R,16.5,N,A*0C");
+		windlist.add("$WIMWV,302,R,16.4,N,A*0F");
+		windlist.add("$WIMWV,307,R,17.0,N,A*0F");
+		windlist.add("$WIMWV,305,R,16.4,N,A*08");
+		windlist.add("$WIMWV,299,R,16.5,N,A*0D");
+
+		currentInstance = this;
 	}
 	
 	@Override
 	public void run() {
-		for(String gprmc : this.gprmclist) {
+		for(int i = 0; i < 10; i++) {
+			String gprmc = this.gprmclist.get(i);
 			this.getConsumer().accept(System.nanoTime(), new StringBuilder(gprmc));
+			
+			String wimwv = this.windlist.get(i);
+			this.getConsumer().accept(System.nanoTime(), new StringBuilder(wimwv));
+			
 			ToolBox.wait(1);
 			
 			if(this.isInterrupted())break;
 		}
+	}
+	
+	public void injectSentence(String sentence) {
+		this.getConsumer().accept(System.nanoTime(), new StringBuilder(sentence));
 	}
 }
