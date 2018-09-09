@@ -21,6 +21,8 @@ public class TCPReader extends NMEAReader {
 	private static Logger log = Logger.getLogger(TCPReader.class);
 
 	private PropertiesFile properties = null;
+
+	private boolean loggingAlertOverSize = true;
 	
 	public TCPReader(BiConsumer<Long, StringBuilder> consumer) {
 		super(consumer);
@@ -46,10 +48,14 @@ public class TCPReader extends NMEAReader {
 				long nanoTime = System.nanoTime();
 				
 				if(cfs.size() < 40) {
+					this.loggingAlertOverSize  = true;
 					cfs.add(CompletableFuture.runAsync(() -> this.getConsumer().accept(nanoTime, msg), executor));
 				}
 				else {
-					log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
+					if(this.loggingAlertOverSize) {
+						log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
+						this.loggingAlertOverSize = false;
+					}
 				}
 				
 				cfs.removeIf(cf -> cf.isDone());

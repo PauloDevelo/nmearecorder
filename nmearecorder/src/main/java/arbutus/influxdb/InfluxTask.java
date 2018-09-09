@@ -66,9 +66,6 @@ public class InfluxTask<T> extends TimerTask{
 					if( value != null && !Float.isNaN(value)) {
 						influxFields.put(influxAnnotation.name(), value);
 					}
-					else {
-						log.error("The getter of " + f.getName() + " return something else than a float.");
-					}
 				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
 					log.error("Error when adding a field for influx", e);
 				} 
