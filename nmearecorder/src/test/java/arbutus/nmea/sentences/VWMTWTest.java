@@ -39,7 +39,7 @@ public class VWMTWTest {
 		long nano = System.nanoTime();
 		
 		// Act
-		VWMTW dpt = new VWMTW(nano, new StringBuilder("$VWMTW,"));
+		new VWMTW(nano, new StringBuilder("$VWMTW,"));
 
 		// Assert
 		fail("An ArrayIndexOutOfBoundsExption should be thrown");

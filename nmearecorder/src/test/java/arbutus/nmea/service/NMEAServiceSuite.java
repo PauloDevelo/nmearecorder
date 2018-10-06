@@ -3,7 +3,6 @@ package arbutus.nmea.service;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import arbutus.nmea.sentences.NMEASentencesSuite;
 import arbutus.nmea.service.connectors.TCPReaderTest;
 
 @RunWith(Suite.class)

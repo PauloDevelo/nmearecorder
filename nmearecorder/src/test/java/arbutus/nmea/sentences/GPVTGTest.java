@@ -42,7 +42,7 @@ public class GPVTGTest {
 		long nano = System.nanoTime();
 		
 		// Act
-		GPVTG vtg = new GPVTG(nano, new StringBuilder("$GPVTG,,T,,M"));
+		new GPVTG(nano, new StringBuilder("$GPVTG,,T,,M"));
 		
 		// Assert
 		fail("An ArrayIndexOutOfBoundsExption should be thrown");

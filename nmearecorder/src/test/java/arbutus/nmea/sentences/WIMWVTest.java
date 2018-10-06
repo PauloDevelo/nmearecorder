@@ -42,7 +42,7 @@ public class WIMWVTest {
 		long nano = System.nanoTime();
 		
 		// Act
-		WIMWV mwv = new WIMWV(nano, new StringBuilder("$WIMWV,"));
+		new WIMWV(nano, new StringBuilder("$WIMWV,"));
 
 		// Assert
 		fail("An ArrayIndexOutOfBoundsExption should be thrown");

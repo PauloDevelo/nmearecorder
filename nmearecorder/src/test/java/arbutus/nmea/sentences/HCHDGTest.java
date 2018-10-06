@@ -44,7 +44,7 @@ public class HCHDGTest {
 		long nano = System.nanoTime();
 		
 		// Act
-		HCHDG vtg = new HCHDG(nano, new StringBuilder("$HCHDG,,"));
+		new HCHDG(nano, new StringBuilder("$HCHDG,,"));
 		
 		// Assert
 		fail("An ArrayIndexOutOfBoundsExption should be thrown");

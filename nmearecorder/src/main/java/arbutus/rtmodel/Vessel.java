@@ -48,6 +48,26 @@ public class Vessel implements INMEAListener{
 	@InfluxField(name="relWindDir")
 	private float relWindDir = Float.NaN;
 	
+	@InfluxField(name="trueWindSpeed")
+	private float trueWindSpeed = Float.NaN;
+	
+	/**
+	 * @return the trueWindSpeed
+	 */
+	public synchronized float getTrueWindSpeed() {
+		return trueWindSpeed;
+	}
+
+	/**
+	 * @return the trueWindDir
+	 */
+	public synchronized float getTrueWindDir() {
+		return trueWindDir;
+	}
+
+	@InfluxField(name="trueWindDir")
+	private float trueWindDir = Float.NaN;
+	
 	private Timer timer;
 	
 	public Vessel() {
@@ -190,6 +210,8 @@ public class Vessel implements INMEAListener{
 	private synchronized void setSpeedAndCourseOverGround(float sog, float cog) {
 		this.sog = sog;
 		this.cog = cog;
+		
+		this.updateTrueWind();
 	}
 
 	/**
@@ -211,6 +233,8 @@ public class Vessel implements INMEAListener{
 	 */
 	private synchronized void setHdg(float hdg) {
 		this.hdg = hdg;
+		
+		this.updateTrueWind();
 	}
 
 	/**
@@ -268,6 +292,31 @@ public class Vessel implements INMEAListener{
 	private synchronized void setRelWind(float relWindDir, float relWindSpeed) {
 		this.relWindSpeed = cleanRelWindSpeed(relWindSpeed);
 		this.relWindDir = relWindDir;
+		
+		this.updateTrueWind();
+	}
+
+	private void updateTrueWind() {
+		
+		if(!Float.isNaN(this.hdg) && !Float.isNaN(this.relWindDir) && !Float.isNaN(this.sog) && !(Float.isNaN(this.cog) && !(Float.isNaN(this.relWindSpeed))))
+		{
+			double awd = Math.toRadians((this.hdg + this.relWindDir) % 360);
+			double cog = Math.toRadians(this.cog);
+			
+			double u =  this.relWindSpeed * Math.sin(awd) - this.sog * Math.sin(cog);
+			double v =  this.relWindSpeed * Math.cos(awd) - this.sog * Math.cos(cog);
+			
+			this.trueWindSpeed = (float) Math.sqrt(u*u + v * v);
+			this.trueWindDir = (float) Math.toDegrees(Math.atan2(u, v));
+			
+			if (this.trueWindDir < 0) {
+				this.trueWindDir = this.trueWindDir + 360;
+			}
+		}
+		else {
+			this.trueWindSpeed = Float.NaN;
+			this.trueWindDir = Float.NaN;
+		}
 	}
 
 	private float cleanRelWindSpeed(float newRelWindSpeed) {
@@ -278,7 +327,7 @@ public class Vessel implements INMEAListener{
 		}
 		
 		float maxRelWindSpeed = getMaxRelWindSpeedFromHisto();
-		if(Float.isNaN(maxRelWindSpeed) || newRelWindSpeed < 5 * maxRelWindSpeed) {
+		if(Float.isNaN(maxRelWindSpeed) || newRelWindSpeed < 5 * (maxRelWindSpeed > 2 ? maxRelWindSpeed : 2)) {
 			cleanedRelWindSpeedHisto.add(newRelWindSpeed);
 			if(cleanedRelWindSpeedHisto.size() > 10) {
 				cleanedRelWindSpeedHisto.remove(0);

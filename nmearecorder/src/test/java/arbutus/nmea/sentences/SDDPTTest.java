@@ -42,7 +42,7 @@ public class SDDPTTest {
 		long nano = System.nanoTime();
 		
 		// Act
-		SDDPT dpt = new SDDPT(nano, new StringBuilder("$SDDPT,"));
+		new SDDPT(nano, new StringBuilder("$SDDPT,"));
 
 		// Assert
 		fail("An ArrayIndexOutOfBoundsExption should be thrown");
