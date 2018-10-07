@@ -85,10 +85,10 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				}
 
 				BatchOptions bathOptions = BatchOptions.DEFAULTS
-						.actions(100)
-						.bufferLimit(1000)
+						.actions(properties.getValueInt("nbActions", 100))
+						.bufferLimit(properties.getValueInt("bufferLimit", 500))
 						.exceptionHandler((failedPoints, throwable) -> { this.logInfluxError(failedPoints, throwable); })
-						.flushDuration(5000)
+						.flushDuration(properties.getValueInt("flushPeriodInSecond", 5) * 1000)
 						.jitterDuration(0);
 				
 				influxDB.enableBatch(bathOptions);
