@@ -84,9 +84,14 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 					influxDB.setRetentionPolicy("aRetentionPolicy");
 				}
 
-				influxDB.enableBatch(BatchOptions.DEFAULTS.exceptionHandler(
-						(failedPoints, throwable) -> { this.logInfluxError(failedPoints, throwable); })
-						);
+				BatchOptions bathOptions = BatchOptions.DEFAULTS
+						.actions(100)
+						.bufferLimit(1000)
+						.exceptionHandler((failedPoints, throwable) -> { this.logInfluxError(failedPoints, throwable); })
+						.flushDuration(5000)
+						.jitterDuration(0);
+				
+				influxDB.enableBatch(bathOptions);
 				
 				log.info("InfluxdbRepository started");
 			}
