@@ -54,7 +54,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 
 	@Override
 	public ServiceState getState() {
-		if(influxDB == null || !Ping()) {
+		if(influxDB == null) {
 			return ServiceState.STOPPED;
 		}
 		else {
