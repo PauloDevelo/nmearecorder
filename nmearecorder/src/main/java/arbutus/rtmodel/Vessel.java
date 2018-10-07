@@ -18,7 +18,6 @@ public class Vessel implements INMEAListener{
 	
 	private INMEAService nmeaService = null;
 	
-	
 	@InfluxField(name="latitude")
 	private float latitudeDegDec = Float.NaN;
 	@InfluxField(name="longitude")

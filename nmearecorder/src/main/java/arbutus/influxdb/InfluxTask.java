@@ -18,12 +18,12 @@ public class InfluxTask<T> extends TimerTask{
 	private ITimeService timeService = null;
 	private IInfluxdbRepository repository = null;
 	
-	private Class<T> type = null;
 	private T instance = null;
 	private String measurementName = null;
 	
+	private HashMap<InfluxField, Method> mapInfluxFieldGetter = new HashMap<InfluxField, Method>();
+	
 	public InfluxTask(String measurementName, Class<T> type, T instance) {
-		this.type = type;
 		this.instance = instance;
 		this.measurementName = measurementName;
 		
@@ -31,48 +31,47 @@ public class InfluxTask<T> extends TimerTask{
 		
 		timeService = srvMgr.getService(ITimeService.class);
 		repository = srvMgr.getService(IInfluxdbRepository.class);
+		
+		for(Field field : type.getDeclaredFields())
+		{
+			try {
+				field.setAccessible(true);
+				
+				InfluxField influxAnnotation = field.getAnnotation(InfluxField.class);
+				if(influxAnnotation != null) {
+					Method getter = type.getDeclaredMethod(getGetterName(field));
+					mapInfluxFieldGetter.put(influxAnnotation, getter);
+				}
+			} catch (NoSuchMethodException | SecurityException e) {
+				log.error("Error when adding a field for influx", e);
+			} 
+		}
 	}
 	
 	@Override
 	public void run() {
 		if(timeService.isSynchonized()) {
-			HashMap<String, Float> influxDbFields = new HashMap<>();
+			HashMap<String, Float> mapInfluxFieldValue = new HashMap<>();
 			
-			for(Field field : type.getDeclaredFields())
+			for(InfluxField influxField : mapInfluxFieldGetter.keySet())
 			{
-				addInfluxField(influxDbFields, field);
+				try {
+					Float value = Float.class.cast(mapInfluxFieldGetter.get(influxField).invoke(instance));
+					
+					if( value != null && !Float.isNaN(value)) {
+						mapInfluxFieldValue.put(influxField.name(), value);
+					}
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					log.error("Error when accessing a field for influx", e);
+				} 
 			}
 			
 			try {
-				repository.addPoint(measurementName, timeService.getUTCDateTime(), influxDbFields);
+				repository.addPoint(measurementName, timeService.getUTCDateTime(), mapInfluxFieldValue);
 			}
 			catch(SynchronizationException ex) {
 				log.error(ex);
 			}
-		}
-	}
-	
-	private void addInfluxField(HashMap<String, Float> influxFields, Field f) {
-		try {
-			f.setAccessible(true);
-			
-			InfluxField influxAnnotation = f.getAnnotation(InfluxField.class);
-			if(influxAnnotation != null) {
-				
-				try {
-					Method getter = type.getDeclaredMethod(getGetterName(f));
-					Float value = Float.class.cast(getter.invoke(instance));
-					
-					if( value != null && !Float.isNaN(value)) {
-						influxFields.put(influxAnnotation.name(), value);
-					}
-				} catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
-					log.error("Error when adding a field for influx", e);
-				} 
-			}
-		}
-		catch(IllegalAccessException ex){
-			log.error("Error in addInfluxField", ex);
 		}
 	}
 
