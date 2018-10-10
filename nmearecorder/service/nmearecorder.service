@@ -1,0 +1,14 @@
+[Unit]
+Description=NMEA recorder service
+After=multi-user.target
+Requires=influxdb.service kplex.service
+
+[Service]
+ExecStart=/bin/bash -c "java -Dlog4j.debug -Dlog4j.configuration=file:/etc/nmearecorder/resources/log4j.xml -jar /etc/nmearecorder/nmearecorder.jar"
+Type=simple
+WorkingDirectory=/etc/nmearecorder
+SuccessExitStatus=143
+
+
+[Install]
+WantedBy=multi-user.target
