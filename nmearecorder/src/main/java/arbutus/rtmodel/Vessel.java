@@ -82,7 +82,6 @@ public class Vessel implements INMEAListener{
         		properties.getValueInt("periodSecond", 2)*1000);
 		
 		nmeaService.subscribe(GPRMC.class, this);
-		nmeaService.subscribe(GPVTG.class, this);
 		nmeaService.subscribe(HCHDG.class, this);
 		nmeaService.subscribe(SDDPT.class, this);
 		nmeaService.subscribe(VWVHW.class, this);
@@ -92,7 +91,6 @@ public class Vessel implements INMEAListener{
 	
 	public void unsubscribe() {
 		nmeaService.unsubscribe(GPRMC.class, this);
-		nmeaService.unsubscribe(GPVTG.class, this);
 		nmeaService.unsubscribe(HCHDG.class, this);
 		nmeaService.unsubscribe(SDDPT.class, this);
 		nmeaService.unsubscribe(VWVHW.class, this);
@@ -111,17 +109,14 @@ public class Vessel implements INMEAListener{
 				synchronized (this) {
 					if(!Float.isNaN(rmc.getLatitudeDegDec()) && !Float.isNaN(rmc.getLongitudeDegDec()))
 						setPosition(rmc.getLatitudeDegDec(), rmc.getLongitudeDegDec());
+					
+					if(!Float.isNaN(rmc.getSogKnot()) && !Float.isNaN(rmc.getTmgDegT()))
+						setSpeedAndCourseOverGround(rmc.getSogKnot(), rmc.getTmgDegT());
 				}
 			}
 			else {
 				setPosition(Float.NaN, Float.NaN);
-			}
-		}
-		else if(sentence instanceof GPVTG) {
-			GPVTG vtg = GPVTG.class.cast(sentence);	
-			synchronized (this) {
-				if(!Float.isNaN(vtg.getSpeedKn()) && !Float.isNaN(vtg.getTrackDegT()))
-					setSpeedAndCourseOverGround(vtg.getSpeedKn(), vtg.getTrackDegT());
+				setSpeedAndCourseOverGround(Float.NaN, Float.NaN);
 			}
 		}
 		else if(sentence instanceof HCHDG) {

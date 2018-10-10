@@ -184,10 +184,9 @@ public class VesselTest {
 		arbutus = new Vessel();
 		
 		// Act
-		//NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,246.69,040818,,,D*79");
+		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,0,040818,,,D*79");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,0,T,,M,0,N,0,K,D*07");
 		
 		ToolBox.wait(1);
 		
@@ -213,10 +212,9 @@ public class VesselTest {
 		arbutus = new Vessel();
 		
 		// Act
-		//NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,246.69,040818,,,D*79");
+		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,0,040818,,,D*79");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,270,,,0,E*1A");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,0,T,,M,0,N,0,K,D*07");
 		
 		ToolBox.wait(1);
 		
@@ -242,9 +240,9 @@ public class VesselTest {
 		arbutus = new Vessel();
 		
 		// Act
+		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0,90,040818,,,D*79");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,90,T,,M,0,N,0,K,D*07");
 		
 		ToolBox.wait(1);
 		
@@ -270,9 +268,9 @@ public class VesselTest {
 		arbutus = new Vessel();
 		
 		// Act
+		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,15,90,040818,,,D*79");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,90,T,,M,15,N,15,K,D*07");
 		
 		ToolBox.wait(1);
 		
@@ -297,9 +295,9 @@ public class VesselTest {
 		arbutus = new Vessel();
 		
 		// Act
+		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,15,90,040818,,,D*79");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,180,R,15,N,A*0D");
 		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,90,T,,M,15,N,15,K,D*07");
 		
 		ToolBox.wait(1);
 		

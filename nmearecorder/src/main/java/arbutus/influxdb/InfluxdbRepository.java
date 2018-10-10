@@ -35,7 +35,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 	}
 
 	@Override
-	public void addPoint(String measuremntName, Date utcTime, HashMap<String, Float> fields) {
+	public synchronized void addPoint(String measuremntName, Date utcTime, HashMap<String, Float> fields) {
 		if(getState() == ServiceState.STARTED) {
 			Builder builder = Point.measurement(measuremntName).time(utcTime.getTime(), TimeUnit.MILLISECONDS);
 
