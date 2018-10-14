@@ -1,85 +1,28 @@
 package arbutus.rtmodel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.Timer;
-
-import arbutus.influxdb.InfluxField;
-import arbutus.influxdb.InfluxTask;
 import arbutus.nmea.sentences.*;
 import arbutus.nmea.service.INMEAListener;
 import arbutus.nmea.service.INMEAService;
 import arbutus.service.ServiceManager;
-import arbutus.util.PropertiesFile;
 
-public class Vessel implements INMEAListener{
-	private PropertiesFile properties = null;
+public final class Vessel implements INMEAListener{
+	private final INMEAService nmeaService;
 	
-	private INMEAService nmeaService = null;
+	private final GPSMeasurement gpsMeasurement = new GPSMeasurement();
+	private final FluxgateMeasurement fluxgateMeasurement = new FluxgateMeasurement();
+	private final SounderMeasurement sounder = new SounderMeasurement();
+	private final SpeedoMeasurement speedo = new SpeedoMeasurement();
+	private final WaterTempMeasurement waterTemp = new WaterTempMeasurement();
+	private final AnemoMeasurement anemo = new AnemoMeasurement();
 	
-	@InfluxField(name="latitude")
-	private float latitudeDegDec = Float.NaN;
-	@InfluxField(name="longitude")
-	private float longitudeDegDec = Float.NaN;
-	
-	@InfluxField(name="sog")
-	private float sog = Float.NaN;
-	@InfluxField(name="cog")
-	private float cog = Float.NaN;
-	
-	@InfluxField(name="hdg")
-	private float hdg = Float.NaN;
-	
-	@InfluxField(name="depth")
-	private float depth = Float.NaN;
-	
-	@InfluxField(name="waterTemperature")
-	private float waterTemp = Float.NaN;
-	
-	@InfluxField(name="stw")
-	private float stw = Float.NaN;
-	
-	@InfluxField(name="relWindSpeed")
-	private float relWindSpeed = Float.NaN;
-	private List<Float> cleanedRelWindSpeedHisto = new ArrayList<Float>();
-	
-	@InfluxField(name="relWindDir")
-	private float relWindDir = Float.NaN;
-	
-	@InfluxField(name="trueWindSpeed")
-	private float trueWindSpeed = Float.NaN;
-	
-	/**
-	 * @return the trueWindSpeed
-	 */
-	public synchronized float getTrueWindSpeed() {
-		return trueWindSpeed;
-	}
-
-	/**
-	 * @return the trueWindDir
-	 */
-	public synchronized float getTrueWindDir() {
-		return trueWindDir;
-	}
-
-	@InfluxField(name="trueWindDir")
-	private float trueWindDir = Float.NaN;
-	
-	private Timer timer;
+	private final WindMeasurement wind;
+	private final CurrentMeasurement current;
 	
 	public Vessel() {
-		String fileSep = System.getProperty("file.separator");
-		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "arbutus.properties";
-		properties = PropertiesFile.getPropertiesVM(propertiesPath);
+		this.wind = new WindMeasurement(750, this.fluxgateMeasurement, this.anemo, this.gpsMeasurement);
+		this.current = new CurrentMeasurement(750, this.fluxgateMeasurement, this.gpsMeasurement, this.speedo);
 		
 		nmeaService = ServiceManager.getInstance().getService(INMEAService.class);
-		
-		timer = new Timer();
-        timer.schedule(new InfluxTask<Vessel>(properties.getValue("measurement"), Vessel.class, this), 
-        		properties.getValueInt("initialDelaySecond", 10) * 1000, 
-        		properties.getValueInt("periodSecond", 2)*1000);
 		
 		nmeaService.subscribe(GPRMC.class, this);
 		nmeaService.subscribe(HCHDG.class, this);
@@ -96,8 +39,6 @@ public class Vessel implements INMEAListener{
 		nmeaService.unsubscribe(VWVHW.class, this);
 		nmeaService.unsubscribe(VWMTW.class, this);
 		nmeaService.unsubscribe(WIMWV.class, this);
-		
-		timer.cancel();
 	}
 
 	@Override
@@ -105,250 +46,52 @@ public class Vessel implements INMEAListener{
 		if(sentence instanceof GPRMC) {
 			GPRMC rmc = GPRMC.class.cast(sentence);
 			
-			if(rmc.getStatus() == Status.DataValid) {
-				synchronized (this) {
-					if(!Float.isNaN(rmc.getLatitudeDegDec()) && !Float.isNaN(rmc.getLongitudeDegDec()))
-						setPosition(rmc.getLatitudeDegDec(), rmc.getLongitudeDegDec());
-					
-					if(!Float.isNaN(rmc.getSogKnot()) && !Float.isNaN(rmc.getTmgDegT()))
-						setSpeedAndCourseOverGround(rmc.getSogKnot(), rmc.getTmgDegT());
-				}
-			}
-			else {
-				setPosition(Float.NaN, Float.NaN);
-				setSpeedAndCourseOverGround(Float.NaN, Float.NaN);
-			}
+			gpsMeasurement.setNMEASentence(rmc);
 		}
 		else if(sentence instanceof HCHDG) {
 			HCHDG hdg = HCHDG.class.cast(sentence);
-			if(!Float.isNaN(hdg.getMagHdgDeg())){
-				float hdgVal = hdg.getMagHdgDeg();
-				
-				if(!Float.isNaN(hdg.getMagDevDeg())) {
-					hdgVal += hdg.getMagDevDeg();
-				}
-				
-				if(!Float.isNaN(hdg.getMagVarDeg())) {
-					hdgVal += hdg.getMagVarDeg();
-				}
-				
-				setHdg(hdgVal);
-			}
+			
+			fluxgateMeasurement.setNMEASentence(hdg);
 		}
 		else if(sentence instanceof SDDPT) {
 			SDDPT dpt = SDDPT.class.cast(sentence);
 			
-			if(!Float.isNaN(dpt.getDepth()) && !Float.isNaN(dpt.getOffsetFromTransducer())) {
-				setDepth(dpt.getDepth() + dpt.getOffsetFromTransducer());
-			}
+			sounder.setNMEASentence(dpt);
 		}
 		else if(sentence instanceof VWVHW) {
 			VWVHW vhw = VWVHW.class.cast(sentence);
 			
-			if(!Float.isNaN(vhw.getStwKn()))
-				setStw(vhw.getStwKn());
+			this.speedo.setNMEASentence(vhw);
 		}
 		else if(sentence instanceof VWMTW) {
 			VWMTW mtw = VWMTW.class.cast(sentence);
 			
-			if(!Float.isNaN(mtw.getWaterTempCelcius())) 
-				setWaterTemp(mtw.getWaterTempCelcius());
+			this.waterTemp.setNMEASentence(mtw);
 		}
 		else if(sentence instanceof WIMWV) {
 			WIMWV mwv = WIMWV.class.cast(sentence);
-			if(mwv.getStatus() == Status.DataValid) {
-				if(!mwv.isTrue()) {
-					
-					if(!Float.isNaN(mwv.getWindAngle()) && !Float.isNaN(mwv.getWindSpeedKn()))
-						setRelWind(mwv.getWindAngle(), mwv.getWindSpeedKn());
-				}
-			}
-			else {
-				setRelWind(Float.NaN, Float.NaN);
-			}
-		}
-	}
-
-	/**
-	 * @return the latitudeDegDec
-	 */
-	public synchronized float getLatitudeDegDec() {
-		return latitudeDegDec;
-	}
-
-	/**
-	 * @param latitudeDegDec the latitudeDegDec to set
-	 */
-	private synchronized void setPosition(float latitudeDegDec, float longitudeDegDec) {
-		this.latitudeDegDec = latitudeDegDec;
-		this.longitudeDegDec = longitudeDegDec;
-	}
-
-	/**
-	 * @return the longitudeDegDec
-	 */
-	public synchronized float getLongitudeDegDec() {
-		return longitudeDegDec;
-	}
-
-	/**
-	 * @return the sog
-	 */
-	public synchronized float getSog() {
-		return sog;
-	}
-
-	/**
-	 * @param sog the sog to set
-	 */
-	private synchronized void setSpeedAndCourseOverGround(float sog, float cog) {
-		this.sog = sog;
-		this.cog = cog;
-		
-		this.updateTrueWind();
-	}
-
-	/**
-	 * @return the cog
-	 */
-	public synchronized float getCog() {
-		return cog;
-	}
-
-	/**
-	 * @return the hdg
-	 */
-	public synchronized float getHdg() {
-		return hdg;
-	}
-
-	/**
-	 * @param hdg the hdg to set
-	 */
-	private synchronized void setHdg(float hdg) {
-		this.hdg = hdg;
-		
-		this.updateTrueWind();
-	}
-
-	/**
-	 * @return the depth
-	 */
-	public synchronized float getDepth() {
-		return depth;
-	}
-
-	/**
-	 * @param depth the depth to set
-	 */
-	private synchronized void setDepth(float depth) {
-		this.depth = depth;
-	}
-
-	/**
-	 * @return the waterTemp
-	 */
-	public synchronized float getWaterTemp() {
-		return waterTemp;
-	}
-
-	/**
-	 * @param waterTemp the waterTemp to set
-	 */
-	private synchronized void setWaterTemp(float waterTemp) {
-		this.waterTemp = waterTemp;
-	}
-
-	/**
-	 * @return the stw
-	 */
-	public synchronized float getStw() {
-		return stw;
-	}
-
-	/**
-	 * @param stw the stw to set
-	 */
-	private synchronized void setStw(float stw) {
-		this.stw = stw;
-	}
-
-	/**
-	 * @return the relWindSpeed
-	 */
-	public synchronized float getRelWindSpeed() {
-		return relWindSpeed;
-	}
-
-	/**
-	 * @param relWindSpeed the relWindSpeed to set
-	 */
-	private synchronized void setRelWind(float relWindDir, float relWindSpeed) {
-		this.relWindSpeed = cleanRelWindSpeed(relWindSpeed);
-		this.relWindDir = relWindDir;
-		
-		this.updateTrueWind();
-	}
-
-	private void updateTrueWind() {
-		
-		if(!Float.isNaN(this.hdg) && !Float.isNaN(this.relWindDir) && !Float.isNaN(this.sog) && !(Float.isNaN(this.cog) && !(Float.isNaN(this.relWindSpeed))))
-		{
-			double awd = Math.toRadians((this.hdg + this.relWindDir) % 360);
-			double cog = Math.toRadians(this.cog);
 			
-			double u =  this.relWindSpeed * Math.sin(awd) - this.sog * Math.sin(cog);
-			double v =  this.relWindSpeed * Math.cos(awd) - this.sog * Math.cos(cog);
-			
-			this.trueWindSpeed = (float) Math.sqrt(u*u + v * v);
-			this.trueWindDir = (float) Math.toDegrees(Math.atan2(u, v));
-			
-			if (this.trueWindDir < 0) {
-				this.trueWindDir = this.trueWindDir + 360;
-			}
+			this.anemo.setNMEASentence(mwv);
 		}
-		else {
-			this.trueWindSpeed = Float.NaN;
-			this.trueWindDir = Float.NaN;
-		}
-	}
-
-	private float cleanRelWindSpeed(float newRelWindSpeed) {
-		
-		if (Float.isNaN(newRelWindSpeed))
-		{
-			return Float.NaN;
-		}
-		
-		float maxRelWindSpeed = getMaxRelWindSpeedFromHisto();
-		if(Float.isNaN(maxRelWindSpeed) || newRelWindSpeed < 5 * (maxRelWindSpeed > 2 ? maxRelWindSpeed : 2)) {
-			cleanedRelWindSpeedHisto.add(newRelWindSpeed);
-			if(cleanedRelWindSpeedHisto.size() > 10) {
-				cleanedRelWindSpeedHisto.remove(0);
-			}
-			return newRelWindSpeed;
-		}
-		else {
-			return Float.NaN;
-		}
-	}
-
-	private float getMaxRelWindSpeedFromHisto() {
-		OptionalDouble maxSpeed = cleanedRelWindSpeedHisto.stream().mapToDouble(speed -> speed).max();
-		
-		if(maxSpeed.isPresent())
-			return (float)maxSpeed.getAsDouble();
-		else {
-			return Float.NaN;
-		}
-	}
-
-	/**
-	 * @return the relWindDir
-	 */
-	public synchronized float getRelWindDir() {
-		return relWindDir;
 	}
 	
+	public GPSMeasurement getGPSMeas() {
+		return this.gpsMeasurement;
+	}
+
+	public FluxgateMeasurement getFluxgateMeas() {
+		return this.fluxgateMeasurement;
+	}
+
+	public AnemoMeasurement getAnemo() {
+		return this.anemo;
+	}
+
+	public WindMeasurement getWind() {
+		return this.wind;
+	}
 	
+	public CurrentMeasurement getCurrent() {
+		return this.current;
+	}
 }

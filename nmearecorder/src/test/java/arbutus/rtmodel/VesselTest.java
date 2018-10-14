@@ -96,7 +96,7 @@ public class VesselTest {
 		ToolBox.wait(3);
 		
 		// Assert
-		assertTrue("We should be somewhere.", arbutus.getLatitudeDegDec() != 0 && arbutus.getLongitudeDegDec() != 0);
+		assertTrue("We should be somewhere.", arbutus.getGPSMeas().getLatitudeDegDec() != 0 && arbutus.getGPSMeas().getLongitudeDegDec() != 0);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -139,7 +139,7 @@ public class VesselTest {
 		// Act
 		
 		// Assert
-		assertThat(arbutus.getRelWindSpeed(), is(not(Float.NaN)));
+		assertThat(arbutus.getAnemo().getRelWindSpeed(), is(not(Float.NaN)));
 	}
 	
 	
@@ -164,7 +164,7 @@ public class VesselTest {
 		// Assert
 		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,299,R,90,N,A*0D");
 		ToolBox.wait(1);
-		assertThat(arbutus.getRelWindSpeed(), is(equalTo(Float.NaN)));
+		assertThat(arbutus.getAnemo().getRelWindSpeed(), is(equalTo(Float.NaN)));
 	}
 	
 	@Test
@@ -191,8 +191,8 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindDir(), is(equalTo(90f)));
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
+		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(90f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
 	@Test
@@ -219,8 +219,8 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindDir(), is(equalTo(270f)));
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
+		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(270f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
 	@Test
@@ -247,8 +247,8 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindDir(), is(equalTo(90f)));
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
+		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(90f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
 	@Test
@@ -275,7 +275,7 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(0f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(0f)));
 	}
 	
 	@Test
@@ -302,7 +302,7 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(30f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(30f)));
 	}
 	
 	@Test
@@ -330,6 +330,6 @@ public class VesselTest {
 		ToolBox.wait(1);
 		
 		// Assert
-		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(30f)));
+		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(30f)));
 	}
 }
