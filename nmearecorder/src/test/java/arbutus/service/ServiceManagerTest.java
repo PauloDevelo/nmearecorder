@@ -7,11 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ServiceManagerTest {
+	private Service srv = null;
 	private ServiceA srvA = null;
 	private ServiceB srvB = null;
 	
 	@Before
 	public void setUp() {
+		srv = new Service();
 		srvA = new ServiceA();
 		srvB = new ServiceB();
 	}
@@ -22,6 +24,7 @@ public class ServiceManagerTest {
 		
 		svcMgr.unregister(InterfaceA.class);
 		svcMgr.unregister(InterfaceB.class);
+		svcMgr.unregister(IService.class);
 	}
 	
     @Test
@@ -58,7 +61,7 @@ public class ServiceManagerTest {
     }
     
     @Test
-    public void StartServices()
+    public void StartServices() throws Exception
     {
         // Arrange
     	ServiceManager svcMgr = ServiceManager.getInstance();
@@ -66,14 +69,13 @@ public class ServiceManagerTest {
 		svcMgr.register(InterfaceB.class, srvB);
 		
     	// Act
-    	svcMgr.startServices();
-    	
-    	//Assert
+		svcMgr.startServices();
+		
+		//Assert
     	assertEquals("Because the serviceA started.", 1, srvA.nbStart);
     	assertEquals("Because the serviceA did not stop.", 0, srvB.nbStop);
     	assertEquals("Because the serviceB started.", 1, srvA.nbStart);
     	assertEquals("Because the serviceB did not stop.", 0, srvB.nbStop);
-
     }
     
     @Test
@@ -94,6 +96,25 @@ public class ServiceManagerTest {
     	assertEquals("Because the serviceB did stop.", 1, srvB.nbStop);
     }
     
+    @Test
+    public void StartServices_With_OneServiceFailing_All_Service_Should_Be_Stoped_BeforeThrowing_Exception() {
+    	// Arrange
+    	ServiceManager svcMgr = ServiceManager.getInstance();
+    	
+		svcMgr.register(InterfaceA.class, srvA);
+		svcMgr.register(IService.class, srv);
+		
+    	// Act
+    	try {
+			svcMgr.startServices();
+			fail("Because an exception should have been thrown in startServices");
+		} catch (Exception e) {
+			//Assert
+	    	assertEquals("Because the serviceA started once.", 1, srvA.nbStart);
+	    	assertEquals("Because the serviceA did stop because of the exception thrown by srv.", 1, srvA.nbStop);
+		}
+    }
+    
     interface InterfaceA{}
     interface InterfaceB{}
     
@@ -101,7 +122,6 @@ public class ServiceManagerTest {
     	
 		@Override
 		public ServiceState getState() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -146,20 +166,16 @@ public class ServiceManagerTest {
 	class Service implements IService{
 		@Override
 		public ServiceState getState() {
-			// TODO Auto-generated method stub
-			return null;
+			return ServiceState.STOPPED;
 		}
 
 		@Override
-		public void start() {
-			// TODO Auto-generated method stub
-			
+		public void start() throws Exception{
+			throw new Exception();
 		}
 
 		@Override
 		public void stop() {
-			// TODO Auto-generated method stub
-			
 		}
 	}
     

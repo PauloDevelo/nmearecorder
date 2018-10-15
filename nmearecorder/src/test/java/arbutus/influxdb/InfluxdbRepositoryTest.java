@@ -1,6 +1,7 @@
 package arbutus.influxdb;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class InfluxdbRepositoryTest {
 	
 	@Before
 	public void setup() {
-		repository = new InfluxdbRepository();
+		
 	}
 	
 	@After
@@ -29,6 +30,7 @@ public class InfluxdbRepositoryTest {
 	@Test
 	public void BuildAnInfluxdbRepository() {
 		// Arrange
+		repository = new InfluxdbRepository(new InfluxdbContext("http://dumb:8086", "dbname"));
 		
 		// Act
 		
@@ -37,21 +39,28 @@ public class InfluxdbRepositoryTest {
 	}
 	
 	@Test
-	@Ignore
-	public void Start_ShouldNotBeSarted() {
+	public void Start_AnInaccessibleInluxDB_ShouldNotBeSarted(){
 		// Arrange
+		repository = new InfluxdbRepository(new InfluxdbContext("http://dumb:8086", "dbname"));
 		
 		// Act
-		repository.start();
+		try {
+			repository.start();
+			fail("Because the database is inaccessible, we should not be able to start the service");
+		}
+		catch(Exception ex) {
+			
+		}
 		
 		// Assert
-		assertEquals("Because the service should be stopped, influxdb being inaccessible from here", ServiceState.STARTED, repository.getState());
+		assertEquals("Because the service should be stopped, influxdb being inaccessible from here", ServiceState.STOPPED, repository.getState());
 	}
 	
 	@Test
 	@Ignore
-	public void Stop_ShouldBeStopped() {
+	public void Stop_ShouldBeStopped() throws Exception {
 		// Arrange
+		repository = new InfluxdbRepository(new InfluxdbContext("http://192.168.43.148:8086", "arbutustimeseries"));
 		repository.start();
 		
 		// Act
@@ -59,12 +68,14 @@ public class InfluxdbRepositoryTest {
 		
 		// Assert
 		assertEquals("Because the service should be started", ServiceState.STOPPED, repository.getState());
+
 	}
 	
 	@Test
 	@Ignore
-	public void Write_ShouldNotBeok() {
+	public void Write_ShouldBeok() throws Exception{
 		// Arrange
+		repository = new InfluxdbRepository(new InfluxdbContext("http://dumb:8086", "dbname"));
 		repository.start();
 		HashMap<String, Float> fields = new HashMap<String, Float>();
 		fields.put("test", (float)0.0);
