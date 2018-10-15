@@ -58,7 +58,7 @@ public class TimeServiceTest {
 	}
 	
 	@Test 
-	public void Start__When_TimeService_Starts_Subscribe_Should_Be_Call() {
+	public void Start__When_TimeService_Starts_Subscribe_Should_Be_Call() throws Exception {
 		// Arrange 
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
 		
@@ -76,11 +76,10 @@ public class TimeServiceTest {
 		
 		// Assert
 		context.assertIsSatisfied();
-		
 	}
 	
 	@Test
-	public void Synchronized_InATimelyManner() {
+	public void Synchronized_InATimelyManner() throws Exception {
 		// Arrange
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
 		
@@ -107,7 +106,7 @@ public class TimeServiceTest {
 	}
 		
 	@Test
-	public void Check_TimeAccuracy() {
+	public void Check_TimeAccuracy() throws Exception {
 		//Arrange
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
 		
@@ -146,26 +145,32 @@ public class TimeServiceTest {
 		// Arrange
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
 		
-		context.checking(new Expectations() 
-		{{
-				ignoring(nmeaService).start();
-				ignoring(nmeaService).subscribe(GPRMC.class, INMEAListener.class.cast(timeService));
-				ignoring(nmeaService).stop();
-				ignoring(nmeaService).unsubscribe(GPRMC.class, INMEAListener.class.cast(timeService));
+		try {
+			context.checking(new Expectations() 
+			{{
+					ignoring(nmeaService).start();
+					ignoring(nmeaService).subscribe(GPRMC.class, INMEAListener.class.cast(timeService));
+					ignoring(nmeaService).stop();
+					ignoring(nmeaService).unsubscribe(GPRMC.class, INMEAListener.class.cast(timeService));
+			}
+			});
+			
+			ServiceManager.getInstance().startServices();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		});
-		
-		ServiceManager.getInstance().startServices();
-		
+			
 		// Act
 		timeService.getUTCDateTime();
+		
 	}
 	
 	@Test
-	public void GetUTCDateTime_AfterReceivingCorruptedData_ShouldStillReturnTheCorrectTime() throws ParseException {
+	public void GetUTCDateTime_AfterReceivingCorruptedData_ShouldStillReturnTheCorrectTime() throws Exception {
 		//Arrange
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
-		
+
 		context.checking(new Expectations() 
 		{{
 				ignoring(nmeaService).start();
@@ -189,45 +194,37 @@ public class TimeServiceTest {
 		
 		GPRMC corruptedGprmc = new GPRMC(0, new StringBuilder("$GPRMC,193134.00,A,2219.93324,S,16649.39025,E,0.052,,,,,D*64"));
 		
-		try {
-			// Act
-			TimeService.class.cast(timeService).onNewNMEASentence(corruptedGprmc);
-			
-			long timeDiffWithSystem = Math.abs(correctRMC.getUtcDateTime().getTime() - timeService.getUTCDateTime().getTime());
-			
-			// Assert
-			assertThat("Because the injection of a corrupted gprmc sentence should not be considered in the timeservice", timeDiffWithSystem, is(lessThan(80L)));
+		// Act
+		TimeService.class.cast(timeService).onNewNMEASentence(corruptedGprmc);
 		
-		} catch (SynchronizationException e1) {
-			e1.printStackTrace();
-		}
+		long timeDiffWithSystem = Math.abs(correctRMC.getUtcDateTime().getTime() - timeService.getUTCDateTime().getTime());
+		
+		// Assert
+		assertThat("Because the injection of a corrupted gprmc sentence should not be considered in the timeservice", timeDiffWithSystem, is(lessThan(80L)));
 	}
 	
 	
 	@Test
-	public void getFormatedSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() {
+	public void getFormatedSyncCommand_WithACorrectDateTime_ShouldReturnTheCommadFormattedWithThisDate() throws Throwable {
 		// Arrange
 		Date aDate = new Date(1535868218178L);
 		
 		ITimeService timeService = ServiceManager.getInstance().getService(ITimeService.class);
-		context.checking(new Expectations() 
-		{{
-				ignoring(nmeaService).start();
-				ignoring(nmeaService).subscribe(GPRMC.class, INMEAListener.class.cast(timeService));
-				ignoring(nmeaService).stop();
-				ignoring(nmeaService).unsubscribe(GPRMC.class, INMEAListener.class.cast(timeService));
-		}
-		});
 		
-		// Act
-		try {
+			context.checking(new Expectations() 
+			{{
+					ignoring(nmeaService).start();
+					ignoring(nmeaService).subscribe(GPRMC.class, INMEAListener.class.cast(timeService));
+					ignoring(nmeaService).stop();
+					ignoring(nmeaService).unsubscribe(GPRMC.class, INMEAListener.class.cast(timeService));
+			}
+			});
+			
+			// Act
 			StringBuilder cmd = ToolBox.callPrivateMethod(StringBuilder.class, this.timeservice, "getFormatedSyncCommand", Date.class, aDate);
 			
 			// Assert
 			assertEquals("echo \"2018/09/02 06:03:38.178+00:00\"",  cmd.toString());
-		} catch (Throwable e) {
-			fail("Should not throw an exception " + e.getMessage());
-		}
 	}
 	
 	

@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 
 public class ServiceManager {
-	private static Logger log = Logger.getLogger(ServiceManager.class);
+	private final static Logger log = Logger.getLogger(ServiceManager.class);
 	private static ServiceManager _instance = null;
 	
 	public static ServiceManager getInstance() {
@@ -17,7 +17,7 @@ public class ServiceManager {
 		return _instance;
 	}
 	
-	private HashMap<Object, Object> _services = new HashMap<>();
+	private final HashMap<Object, Object> _services = new HashMap<>();
 	
 	private ServiceManager() {
 		
@@ -47,15 +47,28 @@ public class ServiceManager {
 		return myInterface.cast(_services.get(myInterface));
 	}
 	
-	public void startServices() {
+	public void startServices() throws Exception{
 		for(Object service : _services.values()) {
-			IService.class.cast(service).start();
+			try {
+				IService.class.cast(service).start();
+			}
+			catch(Exception ex) {
+				log.fatal("A fatal error occured when starting the service " + service.getClass().getName(), ex);
+				stopServices();
+				
+				throw ex;
+			}
 		}
 	}
 	
 	public void stopServices() {
 		for(Object service : _services.values()) {
-			IService.class.cast(service).stop();
+			try {
+				IService.class.cast(service).stop();
+			}
+			catch(Exception ex) {
+				log.error("An exception was thrown when stopping the service " + service.getClass().getName() + ".", ex);
+			}
 		}
 	}
 }

@@ -63,7 +63,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void BuildArbutus() {
+	public void BuildArbutus() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -81,7 +81,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_AfterTimeServiceInitialized_ArbutusShouldGet() {
+	public void RunArbutus_AfterTimeServiceInitialized_ArbutusShouldGet() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -101,7 +101,7 @@ public class VesselTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void RunArbutus_After10sec_WeShouldStartPushingValues() {
+	public void RunArbutus_After10sec_WeShouldStartPushingValues() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -122,7 +122,7 @@ public class VesselTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void RunArbutus_ShouldReceiveSomeWindInformation() {
+	public void RunArbutus_ShouldReceiveSomeWindInformation() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -145,14 +145,14 @@ public class VesselTest {
 	
 	@SuppressWarnings("unchecked")
 	@Test
-	public void RunArbutus_WithASudenStrongSpeed_ShouldCleanSpikes() {
+	public void RunArbutus_WithASudenStrongSpeed_ShouldCleanSpikes() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
 				ignoring(influxService).start();
 				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
 				ignoring(influxService).stop();
-		}});
+		}}); 
 		
 		ServiceManager.getInstance().startServices();
 		arbutus = new Vessel();
@@ -168,7 +168,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_WithHDG90_SOG0_AWD360_ShouldComputeTrueWindDirection90AndSpeed15() {
+	public void RunArbutus_WithHDG90_SOG0_AWD360_ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -196,7 +196,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_WithHDG270_SOG0_AWD360_AWS15_ShouldComputeTrueWindDirection270AndSpeed15() {
+	public void RunArbutus_WithHDG270_SOG0_AWD360_AWS15_ShouldComputeTrueWindDirection270AndSpeed15() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -224,7 +224,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_WithHDG90_SOG0_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed15() {
+	public void RunArbutus_WithHDG90_SOG0_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -252,7 +252,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_WithHDG90_SOG15_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed0() {
+	public void RunArbutus_WithHDG90_SOG15_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed0() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -279,7 +279,7 @@ public class VesselTest {
 	}
 	
 	@Test
-	public void RunArbutus_WithHDG90_SOG15_AWD180_COG90ShouldComputeTrueWindDirection90AndSpeed30() {
+	public void RunArbutus_WithHDG90_SOG15_AWD180_COG90ShouldComputeTrueWindDirection90AndSpeed30() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
@@ -307,7 +307,7 @@ public class VesselTest {
 	
 	@Test
 	@Ignore
-	public void RunArbutus_WithRealData_ShouldComputeTrueWindDirection() {
+	public void RunArbutus_WithRealData_ShouldComputeTrueWindDirection() throws Exception {
 		// Arrange
 		context.checking(new Expectations() 
 		{{

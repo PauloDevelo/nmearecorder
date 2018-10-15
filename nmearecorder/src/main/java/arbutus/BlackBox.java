@@ -3,6 +3,7 @@ package arbutus;
 import org.apache.log4j.Logger;
 
 import arbutus.influxdb.IInfluxdbRepository;
+import arbutus.influxdb.InfluxdbContext;
 import arbutus.influxdb.InfluxdbRepository;
 import arbutus.nmea.service.INMEAService;
 import arbutus.nmea.service.NMEAService;
@@ -41,9 +42,11 @@ public class BlackBox {
 		try {
 			ServiceManager srvMgr = ServiceManager.getInstance();
 			
+			// The order of the services is important because of the dependencies that exists between them and the asynchronous start of the services ...
 			srvMgr.register(INMEAService.class, new NMEAService(TCPReader.class));
 			srvMgr.register(ITimeService.class, new TimeService());
-			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository());
+			
+			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository(new InfluxdbContext()));
 			
 			srvMgr.startServices();
 			

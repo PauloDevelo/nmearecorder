@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 import org.influxdb.BatchOptions;
@@ -20,18 +21,15 @@ import arbutus.service.ServiceState;
 import arbutus.util.PropertiesFile;
 
 public class InfluxdbRepository implements IService, IInfluxdbRepository {
-	private static Logger log = Logger.getLogger(InfluxdbRepository.class);
+	private static final int WAIT_PERIOD_MAX_IN_SECOND = 129;
 
-	private PropertiesFile properties = null;
+	private final static Logger log = Logger.getLogger(InfluxdbRepository.class);
+
+	private final InfluxdbContext context;
 	private InfluxDB influxDB = null;
 
-	public InfluxdbRepository() {
-		String fileSep = System.getProperty("file.separator");
-		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "influxdb.properties";
-
-		log.debug(propertiesPath);
-
-		properties = PropertiesFile.getPropertiesVM(propertiesPath);
+	public InfluxdbRepository(InfluxdbContext context) {
+		this.context = context;
 	}
 
 	@Override
@@ -63,18 +61,34 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 	}
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		if(getState() == ServiceState.STOPPED) {
 			try {
-				influxDB = InfluxDBFactory.connect(properties.getValue("influxdbUrl"), properties.getValue("user"), properties.getValue("password"));
-
-				String dbName = properties.getValue("dbName");
+				influxDB = InfluxDBFactory.connect(context.influxdbUrl, context.user, context.password);
+				
+				int waitInSecond = 1;
+				while (!this.Ping() && waitInSecond < WAIT_PERIOD_MAX_IN_SECOND) {
+					log.warn("Wait " + waitInSecond + " seconds for InfluxDB to be ready.");
+					try {
+						TimeUnit.SECONDS.sleep(waitInSecond);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					waitInSecond *= 2;
+				}
+				
+				if (!this.Ping()) {
+					throw new TimeoutException("InfluxDb does not respond in a timely manner. Please check that InfluxDb properties are correct and it is running correctly.");
+				}
+				
+				String dbName = context.dbName;
 				if(!this.databaseExists(dbName)) {
 					influxDB.query(new Query("CREATE DATABASE " + dbName, dbName, true));
 
 					influxDB.setDatabase(dbName);
 
-					String commandRetention = "CREATE RETENTION POLICY aRetentionPolicy ON "+ dbName + " DURATION " + properties.getValue("retentionDuration") + " REPLICATION 1 DEFAULT";
+					String commandRetention = "CREATE RETENTION POLICY aRetentionPolicy ON "+ dbName + " DURATION " + context.retentionDuration + " REPLICATION 1 DEFAULT";
 					influxDB.query(new Query(commandRetention, dbName, true));
 
 					influxDB.setRetentionPolicy("aRetentionPolicy");
@@ -85,10 +99,10 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				}
 
 				BatchOptions bathOptions = BatchOptions.DEFAULTS
-						.actions(properties.getValueInt("nbActions", 100))
-						.bufferLimit(properties.getValueInt("bufferLimit", 500))
+						.actions(context.nbActions)
+						.bufferLimit(context.bufferLimit)
 						.exceptionHandler((failedPoints, throwable) -> { this.logInfluxError(failedPoints, throwable); })
-						.flushDuration(properties.getValueInt("flushPeriodInSecond", 5) * 1000)
+						.flushDuration(context.flushPeriodInSecond * 1000)
 						.jitterDuration(0);
 				
 				influxDB.enableBatch(bathOptions);
@@ -98,6 +112,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 			catch(Exception ex) {
 				log.fatal("Error when starting the InfluxDb repo as a service.", ex);
 				closeInfluxDb();
+				throw ex;
 			}
 		}
 		else {
