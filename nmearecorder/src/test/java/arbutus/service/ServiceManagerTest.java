@@ -10,9 +10,13 @@ public class ServiceManagerTest {
 	private Service srv = null;
 	private ServiceA srvA = null;
 	private ServiceB srvB = null;
+	int globalPosStart = 0;
+	int globalPosStop = 0;
 	
 	@Before
 	public void setUp() {
+		globalPosStart = 0;
+		globalPosStop = 0;
 		srv = new Service();
 		srvA = new ServiceA();
 		srvB = new ServiceB();
@@ -74,8 +78,24 @@ public class ServiceManagerTest {
 		//Assert
     	assertEquals("Because the serviceA started.", 1, srvA.nbStart);
     	assertEquals("Because the serviceA did not stop.", 0, srvB.nbStop);
-    	assertEquals("Because the serviceB started.", 1, srvA.nbStart);
+    	assertEquals("Because the serviceB started.", 1, srvB.nbStart);
     	assertEquals("Because the serviceB did not stop.", 0, srvB.nbStop);
+    }
+    
+    @Test
+    public void StartServices_StartsShouldBeOrdered() throws Exception
+    {
+        // Arrange
+    	ServiceManager svcMgr = ServiceManager.getInstance();
+    	svcMgr.register(InterfaceA.class, srvA);
+		svcMgr.register(InterfaceB.class, srvB);
+		
+    	// Act
+		svcMgr.startServices();
+		
+		//Assert
+    	assertEquals("Because the serviceA started first.", 0, srvA.posStart);
+    	assertEquals("Because the serviceB started second.", 1, srvB.nbStart);
     }
     
     @Test
@@ -94,6 +114,22 @@ public class ServiceManagerTest {
     	assertEquals("Because the serviceA did stop.", 1, srvA.nbStop);
     	assertEquals("Because the serviceB did not start.", 0, srvA.nbStart);
     	assertEquals("Because the serviceB did stop.", 1, srvB.nbStop);
+    }
+    
+    @Test
+    public void StopServices_ShouldBeOrdered()
+    {
+        // Arrange
+    	ServiceManager svcMgr = ServiceManager.getInstance();
+    	svcMgr.register(InterfaceA.class, srvA);
+		svcMgr.register(InterfaceB.class, srvB);
+		
+    	// Act
+    	svcMgr.stopServices();
+    	
+    	//Assert
+    	assertEquals("Because the serviceA did stop second.", 1, srvA.posStop);
+    	assertEquals("Because the serviceB did stop first.", 0, srvB.posStop);
     }
     
     @Test
@@ -125,16 +161,20 @@ public class ServiceManagerTest {
 			return null;
 		}
 
+		int posStart = -1;
 		int nbStart = 0;
 		@Override
 		public void start() {
 			nbStart++;
+			this.posStart = globalPosStart++;
 		}
 
+		int posStop = -1;
 		int nbStop = 0;
 		@Override
 		public void stop() {
 			nbStop++;
+			posStop = globalPosStop++;
 		}
 	};
 	
@@ -146,16 +186,20 @@ public class ServiceManagerTest {
 			return null;
 		}
 
+		int posStart = -1;
 		int nbStart = 0;
 		@Override
 		public void start() {
 			nbStart++;
+			this.posStart = globalPosStart++;
 		}
 
+		int posStop = -1;
 		int nbStop = 0;
 		@Override
 		public void stop() {
 			nbStop++;
+			posStop = globalPosStop++;
 		}
 	}
 	

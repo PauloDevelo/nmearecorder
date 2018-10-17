@@ -1,6 +1,8 @@
 package arbutus.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -18,6 +20,7 @@ public class ServiceManager {
 	}
 	
 	private final HashMap<Object, Object> _services = new HashMap<>();
+	private final List<Object> _orderedServices = new ArrayList<>();
 	
 	private ServiceManager() {
 		
@@ -35,11 +38,13 @@ public class ServiceManager {
 		}
 		else {
 			_services.put(key, serviceInstance);
+			_orderedServices.add(key);
 			return true;
 		}
 	}
 	
 	public <K> K unregister(Class<K> key) {
+		_orderedServices.remove(key);
 		return key.cast(_services.remove(key));
 	}
 	
@@ -48,7 +53,9 @@ public class ServiceManager {
 	}
 	
 	public void startServices() throws Exception{
-		for(Object service : _services.values()) {
+		for(Object key : _orderedServices) {
+			Object service = _services.get(key);
+			
 			try {
 				IService.class.cast(service).start();
 			}
@@ -62,7 +69,9 @@ public class ServiceManager {
 	}
 	
 	public void stopServices() {
-		for(Object service : _services.values()) {
+		for(int i = _orderedServices.size() - 1; i >= 0; i--) {
+			Object service = _services.get(_orderedServices.get(i));
+			
 			try {
 				IService.class.cast(service).stop();
 			}
