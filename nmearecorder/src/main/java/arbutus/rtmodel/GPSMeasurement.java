@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.influxdb.measurement.NMEAMeasurement;
@@ -20,7 +22,7 @@ public final class GPSMeasurement extends NMEAMeasurement<GPSMeasurement, GPRMC>
 	@InfluxFieldAnnotation(name="cog")
 	private float cog = Float.NaN;
 	
-	public GPSMeasurement() {
+	public GPSMeasurement() throws InvalidClassException, ClassCastException {
 		super(GPSMeasurement.class);
 	}
 	

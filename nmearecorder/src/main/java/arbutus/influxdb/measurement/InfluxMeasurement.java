@@ -1,5 +1,6 @@
 package arbutus.influxdb.measurement;
 
+import java.io.InvalidClassException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,7 +22,7 @@ public abstract class InfluxMeasurement<T> extends Measurement{
 	
 	private final HashMap<InfluxFieldAnnotation, Method> mapInfluxFieldGetter = new HashMap<InfluxFieldAnnotation, Method>();
 	
-	public InfluxMeasurement(Class<T> type){
+	public InfluxMeasurement(Class<T> type) throws InvalidClassException, ClassCastException{
 		ServiceManager srvMgr = ServiceManager.getInstance();
 		
 		this.repository = srvMgr.getService(IInfluxdbRepository.class);
@@ -30,8 +31,7 @@ public abstract class InfluxMeasurement<T> extends Measurement{
 		
 		InfluxMeasurementAnnotation influxMeasurement = type.getAnnotation(InfluxMeasurementAnnotation.class);
 		if(influxMeasurement == null) {
-			log.error("Type " + type.getName() + " does not have any attribute InfluxMeasurementAnnotation defined ! Data will be written inot the measurement named noMeasurementName.");
-			this.measurementName = "noMeasurementName";
+			throw new java.io.InvalidClassException(type.getName() + " should contain an annotation of " + InfluxMeasurementAnnotation.class.getSimpleName() + " type.");
 		}
 		else {
 			this.measurementName = influxMeasurement.name();
@@ -82,7 +82,7 @@ public abstract class InfluxMeasurement<T> extends Measurement{
 					this.mapInfluxFieldGetter.put(influxAnnotation, getter);
 				}
 			} catch (NoSuchMethodException | SecurityException e) {
-				log.error("Error when adding a field for influxDB", e);
+				log.error("Error when adding a field for influxDB for the type " + type.getName() + ": the public getter " + getGetterName(field) + " does not exist or is private.", e);
 			} 
 		}
 	}

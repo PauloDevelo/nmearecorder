@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.influxdb.measurement.NMEAMeasurement;
@@ -11,7 +13,7 @@ public final class WaterTempMeasurement extends NMEAMeasurement<WaterTempMeasure
 	@InfluxFieldAnnotation(name="waterTemperature")
 	private float waterTemp = Float.NaN;
 	
-	public WaterTempMeasurement() {
+	public WaterTempMeasurement() throws InvalidClassException, ClassCastException {
 		super(WaterTempMeasurement.class);
 	}
 	

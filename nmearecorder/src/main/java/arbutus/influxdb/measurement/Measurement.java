@@ -12,15 +12,13 @@ import arbutus.timeservice.ITimeService;
 public abstract class Measurement {
 	private final static Logger log = Logger.getLogger(Measurement.class);
 	
-	protected ITimeService timeService = null;
+	protected final ITimeService timeService;
 	
 	private Date dataDateTime = null;
-	private List<IMeasurementListener> listeners = new ArrayList<IMeasurementListener>();
+	private final List<IMeasurementListener> listeners = new ArrayList<IMeasurementListener>();
 	
 	public Measurement() {
-		ServiceManager srvMgr = ServiceManager.getInstance();
-		
-		this.timeService = srvMgr.getService(ITimeService.class);
+		this.timeService = ServiceManager.getInstance().getService(ITimeService.class);
 	}
 	
 	public final Date getDataUTCDateTime() {

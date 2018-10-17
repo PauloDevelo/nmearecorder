@@ -1,11 +1,13 @@
 package arbutus.influxdb.measurement;
 
+import java.io.InvalidClassException;
+
 import arbutus.nmea.sentences.NMEASentence;
 import arbutus.timeservice.SynchronizationException;
 
 public abstract class NMEAMeasurement<T, D extends NMEASentence> extends InfluxMeasurement<T> {
 
-	public NMEAMeasurement(Class<T> type){
+	public NMEAMeasurement(Class<T> type) throws InvalidClassException, ClassCastException{
 		super(type);
 	}
 	

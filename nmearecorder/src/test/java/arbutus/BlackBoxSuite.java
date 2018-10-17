@@ -3,7 +3,7 @@ package arbutus;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import arbutus.influxdb.InfluxdbRepositoryTest;
+import arbutus.influxdb.InfluxDBSuite;
 import arbutus.nmea.NMEASuite;
 import arbutus.rtmodel.VesselTest;
 import arbutus.service.ServiceManagerTest;
@@ -16,9 +16,9 @@ import arbutus.util.UtilSuite;
 	ServiceManagerTest.class,
 	NMEASuite.class,
 	UtilSuite.class,
-	InfluxdbRepositoryTest.class,
+	InfluxDBSuite.class,
 	VesselTest.class
 })
-public class BlackBoxSuite {
 
+public class BlackBoxSuite {
 }

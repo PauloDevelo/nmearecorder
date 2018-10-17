@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.ComputedMeasurement;
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
@@ -40,7 +42,7 @@ public final class WindMeasurement extends ComputedMeasurement<WindMeasurement> 
 		return (float) this.awd;
 	}
 	
-	public WindMeasurement(long thresholdInMilliSecond, FluxgateMeasurement fluxgate, AnemoMeasurement anemo, GPSMeasurement gps) {
+	public WindMeasurement(long thresholdInMilliSecond, FluxgateMeasurement fluxgate, AnemoMeasurement anemo, GPSMeasurement gps) throws InvalidClassException, ClassCastException {
 		super(thresholdInMilliSecond, WindMeasurement.class);
 		
 		this.fluxgate = fluxgate;

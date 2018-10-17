@@ -1,5 +1,6 @@
 package arbutus.influxdb.measurement;
 
+import java.io.InvalidClassException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +17,7 @@ public abstract class ComputedMeasurement<T> extends InfluxMeasurement<T> implem
 	
 	private final List<Measurement> dependencies = new ArrayList<Measurement>();
 	
-	public ComputedMeasurement(long thresholdInMilliSecond, Class<T> type){
+	public ComputedMeasurement(long thresholdInMilliSecond, Class<T> type) throws InvalidClassException, ClassCastException{
 		super(type);
 		
 		this.thresholdInMilliSecond = thresholdInMilliSecond;

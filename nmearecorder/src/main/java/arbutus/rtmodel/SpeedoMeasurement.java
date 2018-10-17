@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.influxdb.measurement.NMEAMeasurement;
@@ -10,7 +12,7 @@ public final class SpeedoMeasurement extends NMEAMeasurement<SpeedoMeasurement, 
 	@InfluxFieldAnnotation(name="stw")
 	private float stw = Float.NaN;
 	
-	public SpeedoMeasurement() {
+	public SpeedoMeasurement() throws InvalidClassException, ClassCastException {
 		super(SpeedoMeasurement.class);
 	}
 

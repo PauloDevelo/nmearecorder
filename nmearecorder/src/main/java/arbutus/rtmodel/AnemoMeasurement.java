@@ -1,5 +1,6 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -20,7 +21,7 @@ public final class AnemoMeasurement extends NMEAMeasurement<AnemoMeasurement, WI
 	@InfluxFieldAnnotation(name="relWindDir")
 	private float relWindDir = Float.NaN;
 	
-	public AnemoMeasurement() {
+	public AnemoMeasurement() throws InvalidClassException, ClassCastException {
 		super(AnemoMeasurement.class);
 	}
 	

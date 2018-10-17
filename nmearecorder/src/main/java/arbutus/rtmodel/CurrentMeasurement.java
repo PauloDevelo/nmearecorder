@@ -3,6 +3,8 @@
  */
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.ComputedMeasurement;
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
@@ -24,7 +26,7 @@ public final class CurrentMeasurement extends ComputedMeasurement<CurrentMeasure
 	private final GPSMeasurement gps;
 	private final SpeedoMeasurement speedo;
 
-	public CurrentMeasurement(long thresholdInMilliSecond, FluxgateMeasurement fluxgate, GPSMeasurement gps, SpeedoMeasurement speedo) {
+	public CurrentMeasurement(long thresholdInMilliSecond, FluxgateMeasurement fluxgate, GPSMeasurement gps, SpeedoMeasurement speedo) throws InvalidClassException, ClassCastException {
 		super(thresholdInMilliSecond, CurrentMeasurement.class);
 
 		this.fluxgate = fluxgate;

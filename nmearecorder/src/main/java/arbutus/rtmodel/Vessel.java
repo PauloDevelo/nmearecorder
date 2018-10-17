@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.nmea.sentences.*;
 import arbutus.nmea.service.INMEAListener;
 import arbutus.nmea.service.INMEAService;
@@ -8,17 +10,24 @@ import arbutus.service.ServiceManager;
 public final class Vessel implements INMEAListener{
 	private final INMEAService nmeaService;
 	
-	private final GPSMeasurement gpsMeasurement = new GPSMeasurement();
-	private final FluxgateMeasurement fluxgateMeasurement = new FluxgateMeasurement();
-	private final SounderMeasurement sounder = new SounderMeasurement();
-	private final SpeedoMeasurement speedo = new SpeedoMeasurement();
-	private final WaterTempMeasurement waterTemp = new WaterTempMeasurement();
-	private final AnemoMeasurement anemo = new AnemoMeasurement();
+	private final GPSMeasurement gpsMeasurement;
+	private final FluxgateMeasurement fluxgateMeasurement;
+	private final SounderMeasurement sounder;
+	private final SpeedoMeasurement speedo;
+	private final WaterTempMeasurement waterTemp;
+	private final AnemoMeasurement anemo;
 	
 	private final WindMeasurement wind;
 	private final CurrentMeasurement current;
 	
-	public Vessel() {
+	public Vessel() throws InvalidClassException {
+		this.gpsMeasurement = new GPSMeasurement();
+		this.fluxgateMeasurement = new FluxgateMeasurement();
+		this.sounder = new SounderMeasurement();
+		this.speedo = new SpeedoMeasurement();
+		this.waterTemp = new WaterTempMeasurement();
+		this.anemo = new AnemoMeasurement();
+
 		this.wind = new WindMeasurement(750, this.fluxgateMeasurement, this.anemo, this.gpsMeasurement);
 		this.current = new CurrentMeasurement(750, this.fluxgateMeasurement, this.gpsMeasurement, this.speedo);
 		

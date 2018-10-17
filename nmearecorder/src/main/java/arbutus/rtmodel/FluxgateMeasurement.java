@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.influxdb.measurement.NMEAMeasurement;
@@ -11,7 +13,7 @@ public final class FluxgateMeasurement extends NMEAMeasurement<FluxgateMeasureme
 	@InfluxFieldAnnotation(name="hdg")
 	private float hdg = Float.NaN;
 	
-	public FluxgateMeasurement() {
+	public FluxgateMeasurement() throws InvalidClassException, ClassCastException {
 		super(FluxgateMeasurement.class);
 	}
 	

@@ -1,5 +1,7 @@
 package arbutus.rtmodel;
 
+import java.io.InvalidClassException;
+
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.influxdb.measurement.NMEAMeasurement;
@@ -11,7 +13,7 @@ public final class SounderMeasurement extends NMEAMeasurement<SounderMeasurement
 	@InfluxFieldAnnotation(name="depth")
 	private float depth = Float.NaN;
 	
-	public SounderMeasurement() {
+	public SounderMeasurement() throws InvalidClassException, ClassCastException {
 		super(SounderMeasurement.class);
 	}
 	
