@@ -42,7 +42,6 @@ public class BlackBox {
 		try {
 			ServiceManager srvMgr = ServiceManager.getInstance();
 			
-			// The order of the services is important because of the dependencies that exists between them and the asynchronous start of the services ...
 			srvMgr.register(INMEAService.class, new NMEAService(TCPReader.class));
 			srvMgr.register(ITimeService.class, new TimeService());
 			
