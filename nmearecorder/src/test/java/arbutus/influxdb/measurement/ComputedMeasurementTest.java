@@ -35,7 +35,7 @@ public class ComputedMeasurementTest {
 		}};
 		
 		this.influxService = context.mock(InfluxdbRepositoryServiceInterface.class);
-		TimeServiceInterface timeService = new SyncedTimeService(System.nanoTime(), new Date(now));
+		TimeServiceInterface timeService = new SyncedTimeService(System.nanoTime(), new Date(now), false);
 		
 		ServiceManager srvMgr = ServiceManager.getInstance();
 		srvMgr.register(ITimeService.class, timeService);

@@ -7,10 +7,16 @@ public class SyncedTimeService implements TimeServiceInterface{
 	
 	private final long timeInNano;
 	private final Date now;
+	private final boolean allowStart;
 
-	public SyncedTimeService(long nanoTime, Date date) {
+	public SyncedTimeService(long nanoTime, Date date, boolean allowStart) {
 		this.timeInNano = nanoTime;
 		this.now = date;
+		this.allowStart = allowStart;
+	}
+	
+	public SyncedTimeService(boolean allowStart) {
+		this(-1, null, allowStart);
 	}
 
 	@Override
@@ -20,7 +26,10 @@ public class SyncedTimeService implements TimeServiceInterface{
 
 	@Override
 	public Date getUTCDateTime(long nanoTime) throws SynchronizationException {
-		if(this.timeInNano == nanoTime) {
+		if(this.now == null) {
+			return new Date(System.currentTimeMillis());
+		}
+		else if(this.timeInNano == nanoTime) {
 			return this.now;
 		}
 		else {
@@ -45,7 +54,9 @@ public class SyncedTimeService implements TimeServiceInterface{
 
 	@Override
 	public void start() throws Exception {
-		throw new Exception("start function is not allowed");
+		if(!this.allowStart) {
+			throw new Exception("start function is not allowed");
+		}
 	}
 
 	@Override

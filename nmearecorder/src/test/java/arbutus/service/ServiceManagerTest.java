@@ -165,7 +165,7 @@ public class ServiceManagerTest {
 		int nbStart = 0;
 		@Override
 		public void start() {
-			nbStart++;
+			this.nbStart++;
 			this.posStart = globalPosStart++;
 		}
 
@@ -173,8 +173,8 @@ public class ServiceManagerTest {
 		int nbStop = 0;
 		@Override
 		public void stop() {
-			nbStop++;
-			posStop = globalPosStop++;
+			this.nbStop++;
+			this.posStop = globalPosStop++;
 		}
 	};
 	
@@ -190,7 +190,7 @@ public class ServiceManagerTest {
 		int nbStart = 0;
 		@Override
 		public void start() {
-			nbStart++;
+			this.nbStart++;
 			this.posStart = globalPosStart++;
 		}
 
@@ -198,8 +198,8 @@ public class ServiceManagerTest {
 		int nbStop = 0;
 		@Override
 		public void stop() {
-			nbStop++;
-			posStop = globalPosStop++;
+			this.nbStop++;
+			this.posStop = globalPosStop++;
 		}
 	}
 	

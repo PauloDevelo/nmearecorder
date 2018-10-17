@@ -85,6 +85,7 @@ public class VesselTest {
 		// Arrange
 		context.checking(new Expectations() 
 		{{
+				ignoring(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
 				ignoring(influxService).start();
 				ignoring(influxService).stop();
 		}});
@@ -131,8 +132,8 @@ public class VesselTest {
 				ignoring(influxService).stop();
 		}});
 		
-		ServiceManager.getInstance().startServices();
 		arbutus = new Vessel();
+		ServiceManager.getInstance().startServices();
 		
 		ToolBox.wait(12);
 		
@@ -140,202 +141,5 @@ public class VesselTest {
 		
 		// Assert
 		assertThat(arbutus.getAnemo().getRelWindSpeed(), is(not(Float.NaN)));
-	}
-	
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithASudenStrongSpeed_ShouldCleanSpikes() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}}); 
-		
-		ServiceManager.getInstance().startServices();
-		arbutus = new Vessel();
-		
-		ToolBox.wait(12);
-		
-		// Act
-		
-		// Assert
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,299,R,90,N,A*0D");
-		ToolBox.wait(1);
-		assertThat(arbutus.getAnemo().getRelWindSpeed(), is(equalTo(Float.NaN)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithHDG90_SOG0_AWD360_ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,0,040818,,,D*79");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(90f)));
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithHDG270_SOG0_AWD360_AWS15_ShouldComputeTrueWindDirection270AndSpeed15() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0.000,0,040818,,,D*79");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,270,,,0,E*1A");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(270f)));
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithHDG90_SOG0_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,0,90,040818,,,D*79");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindDir(), is(equalTo(90f)));
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(15f)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithHDG90_SOG15_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed0() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,15,90,040818,,,D*79");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,360,R,15,N,A*0D");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(0f)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void RunArbutus_WithHDG90_SOG15_AWD180_COG90ShouldComputeTrueWindDirection90AndSpeed30() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPRMC,033317.00,A,1805.51925,S,17632.80803,E,15,90,040818,,,D*79");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,180,R,15,N,A*0D");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,90,,,0,E*1A");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(30f)));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	@Ignore
-	public void RunArbutus_WithRealData_ShouldComputeTrueWindDirection() throws Exception {
-		// Arrange
-		context.checking(new Expectations() 
-		{{
-				ignoring(influxService).start();
-				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
-				ignoring(influxService).stop();
-		}});
-		
-		ServiceManager.getInstance().startServices();
-		NMEAReaderStub.getCurrentInstance().setInterrupted(true);
-		ToolBox.wait(1);
-		
-		arbutus = new Vessel();
-		
-		// Act
-		NMEAReaderStub.getCurrentInstance().injectSentence("$WIMWV,277,R,7.0,N,A*38");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$HCHDG,286.2,,,9.6,E*28");
-		NMEAReaderStub.getCurrentInstance().injectSentence("$GPVTG,297.8,T,288.1,M,4.6,N,8.5,K,D*2E");
-		
-		ToolBox.wait(1);
-		
-		// Assert
-		assertThat(arbutus.getWind().getTrueWindSpeed(), is(equalTo(30f)));
 	}
 }

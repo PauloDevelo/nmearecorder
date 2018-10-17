@@ -81,7 +81,7 @@ public class NMEAMeasurementTest {
 	@Test
 	public void setNMEASentence_WhenTimeSericeIsSync_ShouldWrite() throws InvalidClassException, ClassCastException {
 		// Arrange
-		TimeServiceInterface timeService = new SyncedTimeService(this.timeInNano, this.now);
+		TimeServiceInterface timeService = new SyncedTimeService(this.timeInNano, this.now, false);
 		ServiceManager.getInstance().register(ITimeService.class, timeService);
 		
 		context.checking(new Expectations() 

@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 import arbutus.influxdb.InfluxDBSuite;
 import arbutus.nmea.NMEASuite;
+import arbutus.rtmodel.MeasurementTestSuite;
 import arbutus.rtmodel.VesselTest;
 import arbutus.service.ServiceManagerTest;
 import arbutus.timeservice.TimeServiceTest;
@@ -17,7 +18,8 @@ import arbutus.util.UtilSuite;
 	NMEASuite.class,
 	UtilSuite.class,
 	InfluxDBSuite.class,
-	VesselTest.class
+	VesselTest.class,
+	MeasurementTestSuite.class
 })
 
 public class BlackBoxSuite {
