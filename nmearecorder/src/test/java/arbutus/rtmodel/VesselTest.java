@@ -167,6 +167,7 @@ public class VesselTest {
 		assertThat(arbutus.getRelWindSpeed(), is(equalTo(Float.NaN)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithHDG90_SOG0_AWD360_ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
 		// Arrange
@@ -195,6 +196,7 @@ public class VesselTest {
 		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithHDG270_SOG0_AWD360_AWS15_ShouldComputeTrueWindDirection270AndSpeed15() throws Exception {
 		// Arrange
@@ -223,6 +225,7 @@ public class VesselTest {
 		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithHDG90_SOG0_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed15() throws Exception {
 		// Arrange
@@ -251,6 +254,7 @@ public class VesselTest {
 		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(15f)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithHDG90_SOG15_AWD360_COG90ShouldComputeTrueWindDirection90AndSpeed0() throws Exception {
 		// Arrange
@@ -278,6 +282,7 @@ public class VesselTest {
 		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(0f)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithHDG90_SOG15_AWD180_COG90ShouldComputeTrueWindDirection90AndSpeed30() throws Exception {
 		// Arrange
@@ -305,6 +310,7 @@ public class VesselTest {
 		assertThat(arbutus.getTrueWindSpeed(), is(equalTo(30f)));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	@Ignore
 	public void RunArbutus_WithRealData_ShouldComputeTrueWindDirection() throws Exception {

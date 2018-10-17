@@ -18,7 +18,6 @@ import org.influxdb.dto.QueryResult;
 
 import arbutus.service.IService;
 import arbutus.service.ServiceState;
-import arbutus.util.PropertiesFile;
 
 public class InfluxdbRepository implements IService, IInfluxdbRepository {
 	private static final int WAIT_PERIOD_MAX_IN_SECOND = 129;

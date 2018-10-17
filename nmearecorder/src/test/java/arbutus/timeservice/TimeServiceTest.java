@@ -9,7 +9,6 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.*;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
