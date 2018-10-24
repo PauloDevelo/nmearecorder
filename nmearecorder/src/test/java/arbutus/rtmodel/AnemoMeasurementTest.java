@@ -18,9 +18,7 @@ import org.junit.Test;
 
 import arbutus.influxdb.IInfluxdbRepository;
 import arbutus.nmea.sentences.WIMWV;
-import arbutus.nmea.service.connectors.NMEAReaderStub;
 import arbutus.service.ServiceManager;
-import arbutus.test.ToolBox;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.SyncedTimeService;
 
@@ -57,7 +55,6 @@ public class AnemoMeasurementTest {
 		ServiceManager.getInstance().unregister(IInfluxdbRepository.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void RunArbutus_WithASudenStrongSpeed_ShouldCleanSpikes() throws Exception {
 		// Arrange

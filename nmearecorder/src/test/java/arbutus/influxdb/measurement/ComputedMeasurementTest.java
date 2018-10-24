@@ -50,6 +50,7 @@ public class ComputedMeasurementTest {
 		srvMgr.unregister(IInfluxdbRepository.class);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void onMeasurementChanged_DependenciesInSameTimeRange_ShoudCompute() throws InvalidClassException, ClassCastException {
 		// Arrange
@@ -76,6 +77,7 @@ public class ComputedMeasurementTest {
 		context.assertIsSatisfied();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void onMeasurementChanged_DependenciesNotInSameTimeRange_ShoudNotCompute() throws InvalidClassException, ClassCastException {
 		// Arrange
@@ -101,6 +103,7 @@ public class ComputedMeasurementTest {
 		context.assertIsSatisfied();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void onMeasurementChanged_OneDependencyGotNullDataDate_ShoudNotCompute() throws InvalidClassException, ClassCastException {
 		// Arrange
