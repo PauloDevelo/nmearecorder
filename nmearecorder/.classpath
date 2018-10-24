@@ -33,5 +33,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jSSC-2.6.0-Release/jssc.jar"/>
+	<classpathentry kind="lib" path="lib/jSSC-2.6.0-Release/javadoc/jssc-2.6.0-javadoc.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
