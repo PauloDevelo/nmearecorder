@@ -10,6 +10,8 @@ import arbutus.service.ServiceManager;
 public final class Vessel implements INMEAListener{
 	private final INMEAService nmeaService;
 	
+	private final EngineMeasurement engineMeasurement;
+	
 	private final GPSMeasurement gpsMeasurement;
 	private final FluxgateMeasurement fluxgateMeasurement;
 	private final SounderMeasurement sounder;
@@ -21,6 +23,8 @@ public final class Vessel implements INMEAListener{
 	private final CurrentMeasurement current;
 	
 	public Vessel() throws InvalidClassException {
+		
+		this.engineMeasurement = new EngineMeasurement();
 		
 		this.gpsMeasurement = new GPSMeasurement();
 		this.fluxgateMeasurement = new FluxgateMeasurement();
@@ -103,5 +107,9 @@ public final class Vessel implements INMEAListener{
 	
 	public CurrentMeasurement getCurrent() {
 		return this.current;
+	}
+
+	public EngineMeasurement getEngineMeasurement() {
+		return this.engineMeasurement;
 	}
 }

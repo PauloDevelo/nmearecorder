@@ -11,10 +11,7 @@ public final class VirtuinoItem{
 	
 	@Override
 	public int hashCode() {
-		//int hash = super.hashCode();
-		int hash = this.command.getVal() * 100 +  this.pin;
-		System.out.println(hash);
-		return hash;
+		return this.command.getVal() * 100 +  this.pin;
 	}
 
 	/* (non-Javadoc)
