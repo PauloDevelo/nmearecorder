@@ -13,7 +13,7 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 	
 	private final SerialVirtuinoContext context;
 	
-	private SerialPort serialPort = null;
+	private final SerialPort serialPort;
 
 	private boolean isPortReady = false;
 
@@ -26,7 +26,7 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 	
 	@Override
 	protected void stop() {
-		if (this.serialPort != null && this.serialPort.isOpened()) {
+		if (this.serialPort.isOpened()) {
 			try {
 				if(this.serialPort.closePort() == false) {
 					log.error("Error when trying to close the port " + this.context.portName);
@@ -37,7 +37,6 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 		}
 		
 		this.isPortReady = false;
-		this.serialPort = null;
 	}
 
 	@Override
@@ -51,11 +50,11 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 						
 						if(this.serialPort.closePort() == false) {
 							log.error("Error when trying to close the port " + this.context.portName);
-							this.serialPort = null;
 						}
 					}
-					
-					this.isPortReady = true;
+					else {
+						this.isPortReady = true;
+					}
 				}
 				else {
 					log.warn("Impossible d'ouvrir le port " + context.portName + ". We will try again later.");
@@ -63,7 +62,6 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 			}
 			catch (SerialPortException e) {
 				log.error("Error when trying to open/configure or close the port " + this.context.portName, e);
-				this.serialPort = null;
 			}
 		}
 	}

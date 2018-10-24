@@ -40,7 +40,7 @@ public class SerialVirtuinoConnectorTest {
 			ToolBox.wait(1);
 		
 		if(!connector.isReady()) {
-			throw new VirtuinoConnectorException("Connector did not get reay within 20 sec...");
+			throw new VirtuinoConnectorException("Connector did not get ready within 20 sec...");
 		}
 	}
 	
@@ -69,14 +69,6 @@ public class SerialVirtuinoConnectorTest {
 		assertFalse("Because the connector should not be ready when the engine is OFF.", connector.isReady());
 		assertTrue("Because the thread of connector should running even if the connector is not ready.", SerialVirtuinoConnectorTest.connectorThread.isAlive());
 	}
-	
-//	#define AGE_ENGINE_INDEX	0
-//	#define RPM_INDEX			1
-//	#define CONSO_INDEX			2
-//	#define QTE_GAZ_INDEX		3
-//	#define TEMP_INDEX			4
-//	#define VOLTAGE_INDEX		5
-//	#define TEMP_COOLANT_INDEX	6
 	
 	@Test(timeout=120000)
 	public void GetEngineInfo_With_Engine_ON__It_Shoud_Return_A_No_Zero_Value() throws VirtuinoConnectorException {

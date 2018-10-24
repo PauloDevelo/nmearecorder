@@ -12,6 +12,8 @@ import arbutus.rtmodel.Vessel;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
+import arbutus.virtuino.service.EngineService;
+import arbutus.virtuino.service.IEngineService;
 
 
 public class BlackBox {
@@ -46,6 +48,7 @@ public class BlackBox {
 			srvMgr.register(ITimeService.class, new TimeService());
 			
 			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository(new InfluxdbContext()));
+			srvMgr.register(IEngineService.class, new EngineService());
 			
 			srvMgr.startServices();
 			

@@ -1,4 +1,4 @@
-package arbutus.virtuino;
+package arbutus.virtuino.connectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

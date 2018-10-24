@@ -26,6 +26,10 @@ public abstract class VirtuinoConnector implements Runnable {
 	public VirtuinoConnector(VirtuinoContext context) {
 		this.context = context;
 	}
+	
+	public VirtuinoContext getContext() {
+		return this.context;
+	}
 
 //	#define AGE_ENGINE_INDEX	0
 //	#define RPM_INDEX			1

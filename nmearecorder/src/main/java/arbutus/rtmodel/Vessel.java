@@ -21,6 +21,7 @@ public final class Vessel implements INMEAListener{
 	private final CurrentMeasurement current;
 	
 	public Vessel() throws InvalidClassException {
+		
 		this.gpsMeasurement = new GPSMeasurement();
 		this.fluxgateMeasurement = new FluxgateMeasurement();
 		this.sounder = new SounderMeasurement();
