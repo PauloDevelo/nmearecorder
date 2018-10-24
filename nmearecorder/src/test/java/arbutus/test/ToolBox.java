@@ -28,4 +28,12 @@ public class ToolBox {
 			e.printStackTrace();
 		}
 	}
+
+	public static void waitms(int ms) {
+		try {
+			TimeUnit.MILLISECONDS.sleep(ms);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -10,6 +10,7 @@ import arbutus.rtmodel.VesselTest;
 import arbutus.service.ServiceManagerTest;
 import arbutus.timeservice.TimeServiceTest;
 import arbutus.util.UtilSuite;
+import arbutus.virtuino.VirtuinoSuite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -19,7 +20,8 @@ import arbutus.util.UtilSuite;
 	UtilSuite.class,
 	InfluxDBSuite.class,
 	VesselTest.class,
-	MeasurementTestSuite.class
+	MeasurementTestSuite.class,
+	VirtuinoSuite.class
 })
 
 public class BlackBoxSuite {
