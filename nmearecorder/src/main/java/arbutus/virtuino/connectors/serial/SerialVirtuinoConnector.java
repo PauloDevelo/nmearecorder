@@ -1,5 +1,8 @@
 package arbutus.virtuino.connectors.serial;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 
 import arbutus.virtuino.connectors.VirtuinoConnector;
@@ -15,8 +18,6 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 	
 	private final SerialPort serialPort;
 
-	private boolean isPortReady = false;
-
 	public SerialVirtuinoConnector(SerialVirtuinoContext context) {
 		super(context);
 		this.context = context;
@@ -26,7 +27,7 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 	
 	@Override
 	protected void stop() {
-		if (this.serialPort.isOpened()) {
+		if (this.isConnectorReady()) {
 			try {
 				if(this.serialPort.closePort() == false) {
 					log.error("Error when trying to close the port " + this.context.portName);
@@ -35,64 +36,88 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 				log.error("Error when trying to close the port " + this.context.portName, e);
 			}
 		}
-		
-		this.isPortReady = false;
 	}
 
 	@Override
 	protected void checkAndReconnect() {	
-		if(!this.serialPort.isOpened()) {
-			this.isPortReady = false;
-			try {
-				if(this.serialPort.openPort() == true){
+		if(!this.isConnectorReady()) {
+			if(this.openPort()) {
+				try {
 					if(this.serialPort.setParams(this.context.baudRate.getVal(), this.context.dataBits.getVal(), this.context.stopBits.getVal(), this.context.parity.getVal()) == false){
 						log.warn("Impossible de paramétrer le port " + context.portName + ". We will try again later.");
 						
-						if(this.serialPort.closePort() == false) {
-							log.error("Error when trying to close the port " + this.context.portName);
-						}
+						this.stop();
 					}
-					else {
-						this.isPortReady = true;
-					}
+				} catch (SerialPortException e) {
+					log.error("Error when trying to configure the port " + this.context.portName, e);
+					this.stop();
 				}
-				else {
-					log.warn("Impossible d'ouvrir le port " + context.portName + ". We will try again later.");
-				}
-			}
-			catch (SerialPortException e) {
-				log.error("Error when trying to open/configure or close the port " + this.context.portName, e);
 			}
 		}
 	}
 	
-
-	@Override
-	protected boolean isConnectorReady() {
-		return this.isPortReady;
+	private boolean openPort() {
+		try {
+			if(this.serialPort.openPort() == true){
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		catch (SerialPortException e) {
+			return false;
+		}
 	}
 
 	@Override
+	protected boolean isConnectorReady() {
+		return this.serialPort.isOpened();
+	}
+
+	private boolean successWriting = false;
+	@Override
 	protected boolean writeString(String command) throws VirtuinoConnectorException {
-		try {
-			return this.serialPort.writeBytes(command.getBytes());
-		} catch (SerialPortException e) {
-			this.stop();
-			throw new VirtuinoConnectorException("An SerialPortException has been thrown. We will attempt to reconnect.", e);
+		CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
+			try {
+				this.serialPort.writeBytes(command.getBytes());
+				this.successWriting = true;
+			} catch (SerialPortException e) {
+				stop();
+				this.successWriting = false;
+			}
+		});
+		
+		long timeout = System.currentTimeMillis() + this.context.readWriteTimeoutMilliSec;
+		while(!cf.isDone() && System.currentTimeMillis() < timeout) {
+			try {
+				TimeUnit.MILLISECONDS.sleep(20);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		
+		if(!cf.isDone()) {
+			cf.cancel(true);
+			stop();
+			return false;
+		}
+		else {
+			return successWriting;
 		}
 	}
 
 	@Override
 	protected char readChar() throws VirtuinoConnectorException {
 		try {
-			byte[] arraybyte = this.serialPort.readBytes(1, this.context.charReadTimeoutMilliSec);
+			byte[] arraybyte = this.serialPort.readBytes(1, this.context.readWriteTimeoutMilliSec);
 			return (char) arraybyte[0];
 		} catch (SerialPortException e) {
 			this.stop();
 			throw new VirtuinoConnectorException("An SerialPortException has been thrown. We will attempt to reconnect.", e);
 		}
 		catch(SerialPortTimeoutException e) {
-			throw new VirtuinoConnectorException("A timeout occurs when reading the port " + this.context.portName + ". You should increase the charReadTimeoutMilliSec property.");
+			throw new VirtuinoConnectorException("A timeout occurs when reading the port " + this.context.portName + ". You should increase the readWriteTimeoutMilliSec property.");
 		}
 	}
 
