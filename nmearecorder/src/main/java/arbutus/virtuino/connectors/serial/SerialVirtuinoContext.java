@@ -27,7 +27,7 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 	/**
 	 * Timeout in millisecond for the character reading
 	 */
-	public final int charReadTimeoutMilliSec;
+	public final int readWriteTimeoutMilliSec;
 	
 	/**
 	 * Serial connection baud rate
@@ -54,7 +54,7 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 		super(scanRateInMilliSec);
 		
 		this.portName = portName;
-		this.charReadTimeoutMilliSec = charReadTimeoutMilliSec;
+		this.readWriteTimeoutMilliSec = charReadTimeoutMilliSec;
 		this.baudRate = baudRate;
 		this.dataBits = dataBits;
 		this.stopBits = stopBits;
@@ -65,7 +65,7 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 		super(getProperiesFile().getValueInt("scanRateInMilliSec", 3000));
 		
 		this.portName = properties.getValue("portName");
-		this.charReadTimeoutMilliSec = properties.getValueInt("charReadTimeoutMilliSec", 500);
+		this.readWriteTimeoutMilliSec = properties.getValueInt("readWriteTimeoutMilliSec", 500);
 		this.baudRate = SerialBaud.valueOf(properties.getValueInt("baudRate", SerialBaud.BAUDRATE_4800.getVal()));
 		this.dataBits = SerialDataBits.valueOf(properties.getValueInt("dataBits", SerialDataBits.DATABITS_8.getVal()));
 		this.stopBits = SerialStopBits.valueOf(properties.getValueInt("stopBits", SerialStopBits.STOPBITS_1.getVal()));

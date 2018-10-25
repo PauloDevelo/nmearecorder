@@ -78,6 +78,12 @@ public abstract class VirtuinoConnector implements Runnable {
  	public synchronized float getSyncVirtualFloat(int pinNumber) throws VirtuinoConnectorException {
 		return this.getFloat(VirtuinoCommandType.VirtualFloat, pinNumber);
 	}
+ 	
+ 	public synchronized boolean readSyncDigitalPin(int pinNumber) throws VirtuinoConnectorException{
+ 		float value = this.getFloat(VirtuinoCommandType.DigitalRead, pinNumber);
+ 		
+ 		return value > 0;
+ 	}
 	
 	public synchronized float getSyncFirmwareCode() throws VirtuinoConnectorException {
 		return this.writeFloat(VirtuinoCommandType.FirmwareCode, 0, 1);
