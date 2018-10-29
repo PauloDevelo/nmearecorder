@@ -18,13 +18,15 @@ public abstract class VirtuinoConnector implements Runnable {
 	private final VirtuinoContext context;
 	
 	private boolean isInterrupted = false;
+	
 	private boolean loggingAlertOverSize = true;
+	private boolean loggingManageSubscriptionException = true;
 	
 	private final HashMap<VirtuinoItem, List<BiConsumer<Long, Float>>> consumers = new HashMap<>();
 	
 	private final ExecutorService executor = Executors.newFixedThreadPool(2);
 	private final List<CompletableFuture<Void>> cfs = new ArrayList<>();
-	
+
 	public VirtuinoConnector(VirtuinoContext context) {
 		this.context = context;
 	}
@@ -133,9 +135,14 @@ public abstract class VirtuinoConnector implements Runnable {
 						}
 					}
 				}
+				
+				this.loggingManageSubscriptionException = true;
 			}
 			catch (VirtuinoConnectorException e) {
-				log.error(e.getMessage());
+				if(this.loggingManageSubscriptionException ) {
+					log.error(e.getMessage());
+					this.loggingManageSubscriptionException = false;
+				}
 			}
 		}
 		
