@@ -115,4 +115,8 @@ public final class Vessel implements INMEAListener{
 	public EngineMeasurement getEngineMeasurement() {
 		return this.engineMeasurement;
 	}
+
+	public PIRMeasurement getPirMeasurement() {
+		return pirMeasurement;
+	}
 }
