@@ -5,9 +5,11 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import arbutus.influxdb.measurement.IMeasurementListener;
 import arbutus.influxdb.measurement.InfluxFieldAnnotation;
 import arbutus.influxdb.measurement.InfluxMeasurement;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
+import arbutus.influxdb.measurement.Measurement;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.SynchronizationException;
 import arbutus.virtuino.connectors.VirtuinoCommandType;
@@ -15,7 +17,7 @@ import arbutus.virtuino.service.IVirtuinoService;
 import arbutus.virtuino.service.VirtuinoServiceType;
 
 @InfluxMeasurementAnnotation(name="Engine")
-public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
+public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> implements IMeasurementListener {
 	private final static Logger log = Logger.getLogger(EngineMeasurement.class);
 	
 	//#define AGE_ENGINE_INDEX	0
@@ -46,9 +48,14 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	@InfluxFieldAnnotation(name="coolantTemp")
 	private float coolantTemp = Float.NaN;
 	
+	@InfluxFieldAnnotation(name="consumptionPer100nm")
+	private float consumptionPer100nm = Float.NaN;
+
 	private ArrayList<EngineMeasurementType> listExpectedValue = new ArrayList<>();
 
-	public EngineMeasurement() throws InvalidClassException, ClassCastException {
+	private final GPSMeasurement gps;
+
+	public EngineMeasurement(GPSMeasurement gps) throws InvalidClassException, ClassCastException {
 		super(EngineMeasurement.class);
 		
 		this.initExpectedValue();
@@ -82,6 +89,9 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 				break;
 			}
 		}
+		
+		this.gps = gps;
+		this.gps.addListener(this);
 	}
 
 	private void initExpectedValue() {
@@ -90,6 +100,20 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 		for(EngineMeasurementType measurement : EngineMeasurementType.values()) {
 			this.listExpectedValue.add(measurement);
 		}
+	}
+	
+	/**
+	 * @return the consumptionPer100nm
+	 */
+	public synchronized float getConsumptionPer100nm() {
+		return consumptionPer100nm;
+	}
+
+	/**
+	 * @param consumptionPer100nm the consumptionPer100nm to set
+	 */
+	public synchronized void setConsumptionPer100nm(float consumptionPer100nm) {
+		this.consumptionPer100nm = consumptionPer100nm;
 	}
 
 	/**
@@ -134,6 +158,8 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setConsumption(Long nano, Float consumption) {
 		this.consumption = consumption;
+		computeConsumptionPer100Nm();
+		
 		this.onNewValue(nano, EngineMeasurementType.CONSO);
 	}
 
@@ -196,6 +222,11 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 		this.coolantTemp = coolantTemp;
 		this.onNewValue(nano, EngineMeasurementType.TEMP_COOLANT);
 	}
+	
+	@Override
+	public void onMeasurementChanged(Measurement measurement) {
+		computeConsumptionPer100Nm();
+	}
 
 	private void onNewValue(long nano, EngineMeasurementType measurement) {
 		this.listExpectedValue.remove(measurement);
@@ -213,7 +244,21 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 			}
 			this.initExpectedValue();
 		}
-		
+	}
+
+	private void computeConsumptionPer100Nm() {
+		if(!Float.isNaN(this.gps.getSog()) && !Float.isNaN(this.getConsumption())) {
+			if(this.gps.getSog() != 0) {
+				float timeFor100NM = 100f / this.gps.getSog();
+				this.setConsumptionPer100nm(this.getConsumption() * timeFor100NM);
+			}
+			else {
+				this.setConsumptionPer100nm(Float.POSITIVE_INFINITY);
+			}
+		}
+		else {
+			this.setConsumptionPer100nm(Float.NaN);
+		}
 	}
 	
 }

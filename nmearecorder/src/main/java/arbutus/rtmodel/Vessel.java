@@ -26,7 +26,6 @@ public final class Vessel implements INMEAListener{
 	public Vessel() throws InvalidClassException {
 		
 		this.pirMeasurement = new PIRMeasurement();
-		this.engineMeasurement = new EngineMeasurement();
 		
 		this.gpsMeasurement = new GPSMeasurement();
 		this.fluxgateMeasurement = new FluxgateMeasurement();
@@ -37,6 +36,8 @@ public final class Vessel implements INMEAListener{
 
 		this.wind = new WindMeasurement(750, this.fluxgateMeasurement, this.anemo, this.gpsMeasurement);
 		this.current = new CurrentMeasurement(750, this.fluxgateMeasurement, this.gpsMeasurement, this.speedo);
+		
+		this.engineMeasurement = new EngineMeasurement(this.gpsMeasurement);
 		
 		nmeaService = ServiceManager.getInstance().getService(INMEAService.class);
 		
