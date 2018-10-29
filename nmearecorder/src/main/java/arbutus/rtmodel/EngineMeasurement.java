@@ -10,12 +10,13 @@ import arbutus.influxdb.measurement.InfluxMeasurement;
 import arbutus.influxdb.measurement.InfluxMeasurementAnnotation;
 import arbutus.service.ServiceManager;
 import arbutus.timeservice.SynchronizationException;
-import arbutus.virtuino.service.IEngineService;
+import arbutus.virtuino.connectors.VirtuinoCommandType;
+import arbutus.virtuino.service.IVirtuinoService;
+import arbutus.virtuino.service.VirtuinoServiceType;
 
 @InfluxMeasurementAnnotation(name="Engine")
 public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	private final static Logger log = Logger.getLogger(EngineMeasurement.class);
-
 	
 	//#define AGE_ENGINE_INDEX	0
 	//#define RPM_INDEX			1
@@ -45,39 +46,39 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	@InfluxFieldAnnotation(name="coolantTemp")
 	private float coolantTemp = Float.NaN;
 	
-	private ArrayList<arbutus.virtuino.service.EngineMeasurement> listExpectedValue = new ArrayList<>();
+	private ArrayList<EngineMeasurementType> listExpectedValue = new ArrayList<>();
 
 	public EngineMeasurement() throws InvalidClassException, ClassCastException {
 		super(EngineMeasurement.class);
 		
 		this.initExpectedValue();
 		
-		IEngineService engineService = ServiceManager.getInstance().getService(IEngineService.class);
-		for(arbutus.virtuino.service.EngineMeasurement measurement : arbutus.virtuino.service.EngineMeasurement.values()){
+		IVirtuinoService virtuinoService = ServiceManager.getInstance().getService(IVirtuinoService.class);
+		for(EngineMeasurementType measurement : EngineMeasurementType.values()){
 			switch(measurement) {
 			case AGE:
-				engineService.subscribe(measurement, this::setAge);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setAge);
 				break;
 			case BAT_VOLTAGE:
-				engineService.subscribe(measurement, this::setBatVoltage);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setBatVoltage);
 				break;
 			case CONSO:
-				engineService.subscribe(measurement, this::setConsumption);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setConsumption);
 				break;
 			case DIESEL_VOL:
-				engineService.subscribe(measurement, this::setDieselQty);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setDieselQty);
 				break;
 			case RPM:
-				engineService.subscribe(measurement, this::setRpm);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setRpm);
 				break;
 			case TEMP_COOLANT:
-				engineService.subscribe(measurement, this::setCoolantTemp);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setCoolantTemp);
 				break;
 			case TEMP_EXHAUST:
-				engineService.subscribe(measurement, this::setExhaustTemp);
+				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setExhaustTemp);
 				break;
 			default:
-				log.warn("The engine measurement " + measurement + " is not in the EngineMeasurement");
+				log.warn("The engine measurement " + measurement + " is not in the EngineMeasurementType");
 				break;
 			}
 		}
@@ -86,7 +87,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	private void initExpectedValue() {
 		this.listExpectedValue.clear();
 		
-		for(arbutus.virtuino.service.EngineMeasurement measurement : arbutus.virtuino.service.EngineMeasurement.values()) {
+		for(EngineMeasurementType measurement : EngineMeasurementType.values()) {
 			this.listExpectedValue.add(measurement);
 		}
 	}
@@ -103,7 +104,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setAge(Long nano, Float age) {
 		this.age = age;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.AGE);
+		this.onNewValue(nano, EngineMeasurementType.AGE);
 	}
 
 	/**
@@ -118,7 +119,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setRpm(Long nano, Float rpm) {
 		this.rpm = rpm;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.RPM);
+		this.onNewValue(nano, EngineMeasurementType.RPM);
 	}
 
 	/**
@@ -133,7 +134,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setConsumption(Long nano, Float consumption) {
 		this.consumption = consumption;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.CONSO);
+		this.onNewValue(nano, EngineMeasurementType.CONSO);
 	}
 
 	/**
@@ -148,7 +149,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setDieselQty(Long nano, Float dieselQty) {
 		this.dieselQty = dieselQty;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.DIESEL_VOL);
+		this.onNewValue(nano, EngineMeasurementType.DIESEL_VOL);
 	}
 
 	/**
@@ -163,7 +164,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setExhaustTemp(Long nano, Float exhaustTemp) {
 		this.exhaustTemp = exhaustTemp;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.TEMP_EXHAUST);
+		this.onNewValue(nano, EngineMeasurementType.TEMP_EXHAUST);
 	}
 
 	/**
@@ -178,7 +179,7 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setBatVoltage(Long nano, Float batVoltage) {
 		this.batVoltage = batVoltage;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.BAT_VOLTAGE);
+		this.onNewValue(nano, EngineMeasurementType.BAT_VOLTAGE);
 	}
 
 	/**
@@ -193,10 +194,10 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> {
 	 */
 	public synchronized void setCoolantTemp(Long nano, Float coolantTemp) {
 		this.coolantTemp = coolantTemp;
-		this.onNewValue(nano, arbutus.virtuino.service.EngineMeasurement.TEMP_COOLANT);
+		this.onNewValue(nano, EngineMeasurementType.TEMP_COOLANT);
 	}
 
-	private void onNewValue(long nano, arbutus.virtuino.service.EngineMeasurement measurement) {
+	private void onNewValue(long nano, EngineMeasurementType measurement) {
 		this.listExpectedValue.remove(measurement);
 		
 		if(this.listExpectedValue.isEmpty()) {

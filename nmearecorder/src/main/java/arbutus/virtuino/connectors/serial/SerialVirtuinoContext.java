@@ -4,21 +4,6 @@ import arbutus.util.PropertiesFile;
 import arbutus.virtuino.connectors.VirtuinoContext;
 
 public class SerialVirtuinoContext extends VirtuinoContext{
-	
-	private static PropertiesFile properties;
-	
-	private static PropertiesFile getProperiesFile()
-	{
-		if(SerialVirtuinoContext.properties == null) {
-			String fileSep = System.getProperty("file.separator");
-			String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + "engine.properties";
-	
-			SerialVirtuinoContext.properties = PropertiesFile.getPropertiesVM(propertiesPath);
-		}
-		
-		return SerialVirtuinoContext.properties;
-	}
-	
 	/**
 	 * Port name the connector shall connect to
 	 */
@@ -51,7 +36,9 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 	
 	
 	public SerialVirtuinoContext(int scanRateInMilliSec, String portName, int charReadTimeoutMilliSec, SerialBaud baudRate, SerialDataBits dataBits, SerialStopBits stopBits, SerialParity parity) {
-		super(scanRateInMilliSec);
+		super();
+		
+		this.setScanRateInMilliSec(scanRateInMilliSec);
 		
 		this.portName = portName;
 		this.readWriteTimeoutMilliSec = charReadTimeoutMilliSec;
@@ -61,8 +48,14 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 		this.parity = parity;
 	}
 
-	public SerialVirtuinoContext() {
-		super(getProperiesFile().getValueInt("scanRateInMilliSec", 3000));
+	public SerialVirtuinoContext(String propertiesFilename) {
+		super();
+		
+		String fileSep = System.getProperty("file.separator");
+		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + propertiesFilename;
+		PropertiesFile properties = PropertiesFile.getPropertiesVM(propertiesPath);
+		
+		this.setScanRateInMilliSec(properties.getValueInt("scanRateInMilliSec", 1000));
 		
 		this.portName = properties.getValue("portName");
 		this.readWriteTimeoutMilliSec = properties.getValueInt("readWriteTimeoutMilliSec", 500);

@@ -1,4 +1,4 @@
-package arbutus.virtuino.service;
+package arbutus.rtmodel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
 //#define VOLTAGE_INDEX		5
 //#define TEMP_COOLANT_INDEX	6
 
-public enum EngineMeasurement {
+public enum EngineMeasurementType {
 	AGE(0),
 	RPM(1),
 	CONSO(2),
@@ -20,21 +20,21 @@ public enum EngineMeasurement {
 	BAT_VOLTAGE(5),
 	TEMP_COOLANT(6);
 	
-	private static Map<Integer, EngineMeasurement> map = new HashMap<>();
+	private static Map<Integer, EngineMeasurementType> map = new HashMap<>();
 	
 	private final int pin;
 
-	EngineMeasurement(int pin) {
+	EngineMeasurementType(int pin) {
         this.pin = pin;
     }
 	
 	static {
-        for (EngineMeasurement engineMeas : EngineMeasurement.values()) {
+        for (EngineMeasurementType engineMeas : EngineMeasurementType.values()) {
             map.put(engineMeas.pin, engineMeas);
         }
     }
 	
-	public static EngineMeasurement valueOf(int pin) {
+	public static EngineMeasurementType valueOf(int pin) {
         return map.get(pin);
     }
 

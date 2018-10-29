@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 public abstract class VirtuinoConnector implements Runnable {
 	private final static Logger log = Logger.getLogger(VirtuinoConnector.class);
 	
+	private Thread threadConnector = null;
+	
 	private final VirtuinoContext context;
 	
 	private boolean isInterrupted = false;
@@ -30,14 +32,6 @@ public abstract class VirtuinoConnector implements Runnable {
 	public VirtuinoContext getContext() {
 		return this.context;
 	}
-
-//	#define AGE_ENGINE_INDEX	0
-//	#define RPM_INDEX			1
-//	#define CONSO_INDEX			2
-//	#define QTE_GAZ_INDEX		3
-//	#define TEMP_INDEX			4
-//	#define VOLTAGE_INDEX		5
-//	#define TEMP_COOLANT_INDEX	6
 	
 	public synchronized void subscribe(VirtuinoItem item, BiConsumer<Long, Float> consumer) {
 		List<BiConsumer<Long, Float>> existingList = this.consumers.get(item);
@@ -110,7 +104,7 @@ public abstract class VirtuinoConnector implements Runnable {
 			}
 			
 			try {
-				Thread.sleep(this.context.scanRateInMilliSec);
+				Thread.sleep(this.context.getScanRateInMilliSec());
 			} catch (InterruptedException e) {
 				this.interrupt();
 			}
@@ -312,5 +306,13 @@ public abstract class VirtuinoConnector implements Runnable {
 		command.append(" $");
 		
 		return command.toString();
+	}
+
+	public Thread getThreadConnector() {
+		return threadConnector;
+	}
+
+	public void setThreadConnector(Thread threadConnector) {
+		this.threadConnector = threadConnector;
 	}
 }

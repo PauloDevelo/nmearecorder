@@ -117,7 +117,7 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 			throw new VirtuinoConnectorException("An SerialPortException has been thrown. We will attempt to reconnect.", e);
 		}
 		catch(SerialPortTimeoutException e) {
-			throw new VirtuinoConnectorException("A timeout occurs when reading the port " + this.context.portName + ". You should increase the readWriteTimeoutMilliSec property.");
+			throw new VirtuinoConnectorException("A timeout occurs when reading the port " + this.context.portName + ". You should increase the readWriteTimeoutMilliSec [" + this.context.readWriteTimeoutMilliSec + "ms] property.");
 		}
 	}
 

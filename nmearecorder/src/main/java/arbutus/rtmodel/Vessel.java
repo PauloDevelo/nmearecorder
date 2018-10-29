@@ -10,6 +10,7 @@ import arbutus.service.ServiceManager;
 public final class Vessel implements INMEAListener{
 	private final INMEAService nmeaService;
 	
+	private final PIRMeasurement pirMeasurement;
 	private final EngineMeasurement engineMeasurement;
 	
 	private final GPSMeasurement gpsMeasurement;
@@ -24,6 +25,7 @@ public final class Vessel implements INMEAListener{
 	
 	public Vessel() throws InvalidClassException {
 		
+		this.pirMeasurement = new PIRMeasurement();
 		this.engineMeasurement = new EngineMeasurement();
 		
 		this.gpsMeasurement = new GPSMeasurement();
