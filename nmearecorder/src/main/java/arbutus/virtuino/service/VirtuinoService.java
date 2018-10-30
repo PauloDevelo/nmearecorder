@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+import javax.activity.InvalidActivityException;
+
 import org.apache.log4j.Logger;
 
 import arbutus.service.IService;
@@ -37,49 +39,59 @@ public class VirtuinoService implements IService, IVirtuinoService{
 
 	@Override
 	public void start() throws Exception {
-		for(VirtuinoConnector connector : this.connectors.values()) {
-			connector.setThreadConnector(new Thread(connector));
-			connector.getThreadConnector().start();
+		if(this.state == ServiceState.STOPPED) {
+			for(VirtuinoConnector connector : this.connectors.values()) {
+				connector.setThreadConnector(new Thread(connector));
+				connector.getThreadConnector().start();
+			}
+			
+			state = ServiceState.STARTED;
+			
+			log.info("Virtuino service started");
 		}
-		
-		state = ServiceState.STARTED;
-		
-		log.info("Virtuino service started");
+		else {
+			throw new InvalidActivityException("Virtuino service is already started.");
+		}
 	}
 
 	@Override
 	public void stop() {
-		for(VirtuinoServiceType connectorType : this.connectors.keySet()) {
-			VirtuinoConnector connector = this.connectors.get(connectorType);
-			if (connector.getThreadConnector() != null && connector.getThreadConnector().isAlive()) {
-				connector.interrupt();
-				
-				try {
-					int nbMilli = 0;
-					while(nbMilli < connector.getContext().getScanRateInMilliSec() && connector.getThreadConnector().isAlive()) {
-						TimeUnit.MILLISECONDS.sleep(100);
-						nbMilli += 100;
-					}
+		if(this.state == ServiceState.STARTED) {
+			for(VirtuinoServiceType connectorType : this.connectors.keySet()) {
+				VirtuinoConnector connector = this.connectors.get(connectorType);
+				if (connector.getThreadConnector() != null && connector.getThreadConnector().isAlive()) {
+					connector.interrupt();
 					
-					if(connector.getThreadConnector().isAlive()) {
+					try {
+						int nbMilli = 0;
+						while(nbMilli < connector.getContext().getScanRateInMilliSec() && connector.getThreadConnector().isAlive()) {
+							TimeUnit.MILLISECONDS.sleep(100);
+							nbMilli += 100;
+						}
+						
+						if(connector.getThreadConnector().isAlive()) {
+							connector.getThreadConnector().interrupt();
+							TimeUnit.MILLISECONDS.sleep(100);
+						}
+					} catch (InterruptedException e) {
 						connector.getThreadConnector().interrupt();
-						TimeUnit.MILLISECONDS.sleep(100);
 					}
-				} catch (InterruptedException e) {
-					connector.getThreadConnector().interrupt();
+				}
+				
+				if(!connector.getThreadConnector().isAlive()) {
+					connector.setThreadConnector(null);
+				}
+				else {
+					log.error("The Virtuino connector " + connectorType.toString() + " could not stopped");
 				}
 			}
 			
-			if(!connector.getThreadConnector().isAlive()) {
-				connector.setThreadConnector(null);
-			}
-			else {
-				log.error("The Virtuino connector " + connectorType.toString() + " could not stopped");
-			}
+			this.state = ServiceState.STOPPED;
+			log.info("Virtuino service stopped");
 		}
-		
-		this.state = ServiceState.STOPPED;
-		log.info("Virtuino service stopped");
+		else {
+			log.warn("Virtuino service already stopped.");
+		}
 	}
 
 	@Override
