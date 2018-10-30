@@ -12,6 +12,7 @@ public class InfluxdbContext {
 	public final int nbActions;
 	public final int bufferLimit;
 	public final int flushPeriodInSecond;
+	public final int waitInfluxDbPeriodMaxInSec;
 
 	public InfluxdbContext() {
 		String fileSep = System.getProperty("file.separator");
@@ -27,6 +28,7 @@ public class InfluxdbContext {
 		this.nbActions = properties.getValueInt("nbActions", 100);
 		this.bufferLimit = properties.getValueInt("bufferLimit", 500);
 		this.flushPeriodInSecond = properties.getValueInt("flushPeriodInSecond", 5);
+		this.waitInfluxDbPeriodMaxInSec = properties.getValueInt("waitInfluxDbPeriodMaxInSec", 181);
 	}
 	
 	public InfluxdbContext(String url, String dbName) {
@@ -38,6 +40,7 @@ public class InfluxdbContext {
 		this.nbActions = 100;
 		this.bufferLimit = 500;
 		this.flushPeriodInSecond = 5;
+		this.waitInfluxDbPeriodMaxInSec = 181;
 	}
 
 }

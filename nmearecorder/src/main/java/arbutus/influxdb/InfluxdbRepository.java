@@ -20,7 +20,7 @@ import arbutus.service.IService;
 import arbutus.service.ServiceState;
 
 public class InfluxdbRepository implements IService, IInfluxdbRepository {
-	private static final int WAIT_PERIOD_MAX_IN_SECOND = 129;
+	private final int WAIT_PERIOD_MAX_IN_SECOND;
 
 	private final static Logger log = Logger.getLogger(InfluxdbRepository.class);
 
@@ -29,6 +29,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 
 	public InfluxdbRepository(InfluxdbContext context) {
 		this.context = context;
+		this.WAIT_PERIOD_MAX_IN_SECOND = context.waitInfluxDbPeriodMaxInSec;
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class InfluxdbRepository implements IService, IInfluxdbRepository {
 				influxDB = InfluxDBFactory.connect(context.influxdbUrl, context.user, context.password);
 				
 				int waitInSecond = 1;
-				while (!this.Ping() && waitInSecond < WAIT_PERIOD_MAX_IN_SECOND) {
+				while (!this.Ping() && waitInSecond < this.WAIT_PERIOD_MAX_IN_SECOND) {
 					log.warn("Wait " + waitInSecond + " seconds for InfluxDB to be ready.");
 					try {
 						TimeUnit.SECONDS.sleep(waitInSecond);
