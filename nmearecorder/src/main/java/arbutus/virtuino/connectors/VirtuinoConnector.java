@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import org.apache.log4j.Logger;
@@ -20,7 +21,6 @@ public abstract class VirtuinoConnector implements Runnable {
 	private boolean isInterrupted = false;
 	
 	private boolean loggingAlertOverSize = true;
-	private boolean loggingManageSubscriptionException = true;
 	
 	private final HashMap<VirtuinoItem, List<BiConsumer<Long, Float>>> consumers = new HashMap<>();
 	
@@ -72,17 +72,33 @@ public abstract class VirtuinoConnector implements Runnable {
 	}
 	
  	public synchronized float getSyncVirtualFloat(int pinNumber) throws VirtuinoConnectorException {
-		return this.getFloat(VirtuinoCommandType.VirtualFloat, pinNumber);
+ 		if(this.isConnectorReady()) {
+ 			return this.getFloat(VirtuinoCommandType.VirtualFloat, pinNumber);
+		}
+		else {
+			throw new VirtuinoConnectorException("The connector is not ready yet.");
+		}
 	}
  	
  	public synchronized boolean readSyncDigitalPin(int pinNumber) throws VirtuinoConnectorException{
- 		float value = this.getFloat(VirtuinoCommandType.DigitalRead, pinNumber);
- 		
- 		return value > 0;
+ 		if(this.isConnectorReady()) {
+ 			float value = this.getFloat(VirtuinoCommandType.DigitalRead, pinNumber);
+ 	 		
+ 	 		return value > 0;
+		}
+		else {
+			throw new VirtuinoConnectorException("The connector is not ready yet.");
+		}
  	}
 	
 	public synchronized float getSyncFirmwareCode() throws VirtuinoConnectorException {
-		return this.writeFloat(VirtuinoCommandType.FirmwareCode, 0, 1);
+		if(this.isConnectorReady()) {
+			return this.writeFloat(VirtuinoCommandType.FirmwareCode, 0, 1);
+		}
+		else {
+			throw new VirtuinoConnectorException("The connector is not ready yet.");
+		}
+		
 	}
 	
 	public synchronized boolean isReady() {
@@ -115,33 +131,37 @@ public abstract class VirtuinoConnector implements Runnable {
 		synchronized (this) {
 			this.stop();
 		}
+		
+		executor.shutdown();
+		try {
+			executor.awaitTermination(3, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			executor.shutdownNow();
+		}
 	}
 	
 	private void manageSubscriptions() {
-		for(VirtuinoItem item : this.consumers.keySet()) {
-			try {
-				float value = this.getFloat(item.command, item.pin);
-				long nanoTime = System.nanoTime();
-				
-				for(BiConsumer<Long, Float> consumer : this.consumers.get(item)) {
-					if(this.cfs.size() < 40) {
-						this.loggingAlertOverSize  = true;
-						this.cfs.add(CompletableFuture.runAsync(() -> consumer.accept(nanoTime, value), executor));
-					}
-					else {
-						if(this.loggingAlertOverSize) {
-							log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
-							this.loggingAlertOverSize = false;
+		if(this.isConnectorReady()) {
+			for(VirtuinoItem item : this.consumers.keySet()) {
+				try {
+					float value = this.getFloat(item.command, item.pin);
+					long nanoTime = System.nanoTime();
+					
+					for(BiConsumer<Long, Float> consumer : this.consumers.get(item)) {
+						if(this.cfs.size() < 40) {
+							this.loggingAlertOverSize  = true;
+							this.cfs.add(CompletableFuture.runAsync(() -> consumer.accept(nanoTime, value), executor));
+						}
+						else {
+							if(this.loggingAlertOverSize) {
+								log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
+								this.loggingAlertOverSize = false;
+							}
 						}
 					}
 				}
-				
-				this.loggingManageSubscriptionException = true;
-			}
-			catch (VirtuinoConnectorException e) {
-				if(this.loggingManageSubscriptionException ) {
+				catch (VirtuinoConnectorException e) {
 					log.error(e.getMessage());
-					this.loggingManageSubscriptionException = false;
 				}
 			}
 		}
@@ -205,73 +225,63 @@ public abstract class VirtuinoConnector implements Runnable {
 	}
 	
 	protected final float getFloat(VirtuinoCommandType type, int pinNumber) throws VirtuinoConnectorException {
-		if(this.isConnectorReady()) {
-			String command = buildReadCommand(type, pinNumber);
-			
-			if(this.writeString(command)) {
-				String reponse = this.readAnswer();
+		String command = buildReadCommand(type, pinNumber);
+		
+		if(this.writeString(command)) {
+			String reponse = this.readAnswer();
 
-				if(!reponse.isEmpty()){
-					int iBegin = reponse.indexOf(command.substring(0, 4));
-					if(iBegin != -1){
-						String valueStr = reponse.substring(iBegin + 5, reponse.length() - 1);
-						try {
-							return Float.parseFloat(valueStr);
-						}
-						catch(NumberFormatException ex) {
-							throw new VirtuinoConnectorException("Number format exception occured for the float number [" + valueStr + "]", ex);
-						}
+			if(!reponse.isEmpty()){
+				int iBegin = reponse.indexOf(command.substring(0, 4));
+				if(iBegin != -1){
+					String valueStr = reponse.substring(iBegin + 5, reponse.length() - 1);
+					try {
+						return Float.parseFloat(valueStr);
 					}
-					else{
-						throw new VirtuinoConnectorException("Unexpected answer for the command [" + command + "]: [" + reponse + "]");
+					catch(NumberFormatException ex) {
+						throw new VirtuinoConnectorException("Number format exception occured for the float number [" + valueStr + "]", ex);
 					}
 				}
-				else {
-					throw new VirtuinoConnectorException("We got no answer for the command [" + command + "]");
+				else{
+					throw new VirtuinoConnectorException("Unexpected answer for the command [" + command + "]: [" + reponse + "]");
 				}
 			}
 			else {
-				throw new VirtuinoConnectorException("The attempt to write failed.");
-			}	
+				throw new VirtuinoConnectorException("We got no answer for the command [" + command + "]");
+			}
 		}
 		else {
-			throw new VirtuinoConnectorException("The connector is not ready yet.");
-		}
+			throw new VirtuinoConnectorException("The attempt to write failed.");
+		}	
 	}
 	
 	protected final float writeFloat(VirtuinoCommandType type, int pinNumber, float value) throws VirtuinoConnectorException {
-		if(this.isConnectorReady()) {
-			String command = buildWriteCommand(type, pinNumber, value);
-			
-			if(this.writeString(command)) {
-				String reponse = this.readAnswer();
+		String command = buildWriteCommand(type, pinNumber, value);
+		
+		if(this.writeString(command)) {
+			String reponse = this.readAnswer();
 
-				if(!reponse.isEmpty()){
-					int iBegin = reponse.indexOf(command.substring(0, 4));
-					if(iBegin != -1){
-						String valueStr = reponse.substring(iBegin + 5, reponse.length() - 1);
-						try {
-							return Float.parseFloat(valueStr);
-						}
-						catch(NumberFormatException ex) {
-							throw new VirtuinoConnectorException("Number format exception occured for the float number [" + valueStr + "]", ex);
-						}
+			if(!reponse.isEmpty()){
+				int iBegin = reponse.indexOf(command.substring(0, 4));
+				if(iBegin != -1){
+					String valueStr = reponse.substring(iBegin + 5, reponse.length() - 1);
+					try {
+						return Float.parseFloat(valueStr);
 					}
-					else{
-						throw new VirtuinoConnectorException("Unexpected answer for the command [" + command + "]: [" + reponse + "]");
+					catch(NumberFormatException ex) {
+						throw new VirtuinoConnectorException("Number format exception occured for the float number [" + valueStr + "]", ex);
 					}
 				}
-				else {
-					throw new VirtuinoConnectorException("We got no answer for the command [" + command + "]");
+				else{
+					throw new VirtuinoConnectorException("Unexpected answer for the command [" + command + "]: [" + reponse + "]");
 				}
 			}
 			else {
-				throw new VirtuinoConnectorException("The attempt to write failed.");
-			}	
+				throw new VirtuinoConnectorException("We got no answer for the command [" + command + "]");
+			}
 		}
 		else {
-			throw new VirtuinoConnectorException("The connector is not ready yet.");
-		}
+			throw new VirtuinoConnectorException("The attempt to write failed.");
+		}	
 	}
 	
 	private final String buildWriteCommand(VirtuinoCommandType commandType, int pin, float value) {
