@@ -24,7 +24,17 @@ public final class VirtuinoItem{
 		}
 		
 		return false;
-	}	
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return super.toString() + "(" + this.command.toString() + ", " + this.pin +")";
+	}
+	
+	
 	
 	
 }
