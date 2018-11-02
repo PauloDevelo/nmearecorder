@@ -1,4 +1,4 @@
-package arbutus.virtuino.service;
+package arbutus.rtmodel;
 
 import java.util.HashMap;
 import java.util.Map;

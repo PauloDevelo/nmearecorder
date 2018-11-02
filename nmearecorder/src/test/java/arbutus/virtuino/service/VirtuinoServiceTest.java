@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import arbutus.rtmodel.EngineMeasurementType;
+import arbutus.rtmodel.VirtuinoServiceType;
 import arbutus.service.ServiceState;
 import arbutus.test.ToolBox;
 import arbutus.virtuino.connectors.VirtuinoConnector;

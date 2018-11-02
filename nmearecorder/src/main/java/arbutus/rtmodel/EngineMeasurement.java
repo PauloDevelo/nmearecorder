@@ -15,7 +15,6 @@ import arbutus.timeservice.SynchronizationException;
 import arbutus.virtuino.connectors.VirtuinoCommandType;
 import arbutus.virtuino.service.IVirtuinoService;
 import arbutus.virtuino.service.VirtuinoServiceException;
-import arbutus.virtuino.service.VirtuinoServiceType;
 
 @InfluxMeasurementAnnotation(name="Engine")
 public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> implements IMeasurementListener {
