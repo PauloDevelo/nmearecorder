@@ -50,7 +50,7 @@ public abstract class InfluxMeasurement<T> extends Measurement{
 				try {
 					Float value = Float.class.cast(this.mapInfluxFieldGetter.get(influxField).invoke(instance));
 					
-					if( value != null && !Float.isNaN(value)) {
+					if( value != null && !Float.isNaN(value) && Float.isFinite(value)) {
 						mapInfluxFieldValue.put(influxField.name(), value);
 					}
 					
