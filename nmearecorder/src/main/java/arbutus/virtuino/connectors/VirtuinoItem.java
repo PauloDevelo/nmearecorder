@@ -33,8 +33,4 @@ public final class VirtuinoItem{
 	public String toString() {
 		return super.toString() + "(" + this.command.toString() + ", " + this.pin +")";
 	}
-	
-	
-	
-	
 }
