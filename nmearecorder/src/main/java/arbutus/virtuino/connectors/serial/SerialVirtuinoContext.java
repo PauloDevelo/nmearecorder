@@ -35,10 +35,8 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 	public final SerialParity parity;
 	
 	
-	public SerialVirtuinoContext(int scanRateInMilliSec, String portName, int charReadTimeoutMilliSec, SerialBaud baudRate, SerialDataBits dataBits, SerialStopBits stopBits, SerialParity parity) {
-		super();
-		
-		this.setScanRateInMilliSec(scanRateInMilliSec);
+	public SerialVirtuinoContext(String connectorKey, int scanRateInMilliSec, String portName, int charReadTimeoutMilliSec, SerialBaud baudRate, SerialDataBits dataBits, SerialStopBits stopBits, SerialParity parity) {
+		super(connectorKey, scanRateInMilliSec);
 		
 		this.portName = portName;
 		this.readWriteTimeoutMilliSec = charReadTimeoutMilliSec;
@@ -49,10 +47,10 @@ public class SerialVirtuinoContext extends VirtuinoContext{
 	}
 
 	public SerialVirtuinoContext(String propertiesFilename) {
-		super();
+		super(propertiesFilename);
 		
 		String fileSep = System.getProperty("file.separator");
-		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + propertiesFilename;
+		String propertiesPath = System.getProperty("user.dir") + fileSep + "properties" + fileSep + propertiesFilename + ".properties";
 		PropertiesFile properties = PropertiesFile.getPropertiesVM(propertiesPath);
 		
 		this.setScanRateInMilliSec(properties.getValueInt("scanRateInMilliSec", 1000));

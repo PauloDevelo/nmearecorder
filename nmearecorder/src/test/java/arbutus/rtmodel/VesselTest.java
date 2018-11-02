@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -26,6 +27,9 @@ import arbutus.service.ServiceManager;
 import arbutus.test.ToolBox;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
+import arbutus.virtuino.connectors.VirtuinoCommandType;
+import arbutus.virtuino.service.IVirtuinoService;
+import arbutus.virtuino.service.IVirtuinoServiceService;
 
 interface InfluxdbRepositoryServiceInterface extends IInfluxdbRepository, IService{}
 
@@ -34,6 +38,7 @@ public class VesselTest {
 	
 	private Mockery context;
 	private InfluxdbRepositoryServiceInterface influxService;
+	private IVirtuinoServiceService virtuinoService;
 	
 	@Before
 	public void setup() {
@@ -48,6 +53,9 @@ public class VesselTest {
 		
 		this.influxService = context.mock(InfluxdbRepositoryServiceInterface.class);
 		srvMgr.register(IInfluxdbRepository.class, this.influxService);
+		
+		this.virtuinoService = context.mock(IVirtuinoServiceService.class);
+		srvMgr.register(IVirtuinoService.class, this.virtuinoService);
 	}
 	
 	@After
@@ -59,8 +67,10 @@ public class VesselTest {
 		ServiceManager.getInstance().unregister(INMEAService.class);
 		ServiceManager.getInstance().unregister(ITimeService.class);
 		ServiceManager.getInstance().unregister(IInfluxdbRepository.class);
+		ServiceManager.getInstance().unregister(IVirtuinoService.class);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void BuildArbutus() throws Exception {
 		// Arrange
@@ -68,6 +78,10 @@ public class VesselTest {
 		{{
 				ignoring(influxService).start();
 				ignoring(influxService).stop();
+				
+				ignoring(virtuinoService).start();
+				ignoring(virtuinoService).stop();
+				ignoring(virtuinoService).subscribe(with(any(String.class)), with(any(VirtuinoCommandType.class)), with(any(int.class)), with(any(BiConsumer.class)));
 		}});
 		
 		ServiceManager.getInstance().startServices();
@@ -88,6 +102,10 @@ public class VesselTest {
 				ignoring(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
 				ignoring(influxService).start();
 				ignoring(influxService).stop();
+				
+				ignoring(virtuinoService).start();
+				ignoring(virtuinoService).stop();
+				ignoring(virtuinoService).subscribe(with(any(String.class)), with(any(VirtuinoCommandType.class)), with(any(int.class)), with(any(BiConsumer.class)));
 		}});
 		
 		ServiceManager.getInstance().startServices();
@@ -109,6 +127,10 @@ public class VesselTest {
 				ignoring(influxService).start();
 				atLeast(1).of(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
 				ignoring(influxService).stop();
+				
+				ignoring(virtuinoService).start();
+				ignoring(virtuinoService).stop();
+				ignoring(virtuinoService).subscribe(with(any(String.class)), with(any(VirtuinoCommandType.class)), with(any(int.class)), with(any(BiConsumer.class)));
 		}});
 		
 		ServiceManager.getInstance().startServices();
@@ -130,6 +152,10 @@ public class VesselTest {
 				ignoring(influxService).start();
 				ignoring(influxService).addPoint(with(any(String.class)), with(any(Date.class)), with(any(HashMap.class)));
 				ignoring(influxService).stop();
+				
+				ignoring(virtuinoService).start();
+				ignoring(virtuinoService).stop();
+				ignoring(virtuinoService).subscribe(with(any(String.class)), with(any(VirtuinoCommandType.class)), with(any(int.class)), with(any(BiConsumer.class)));
 		}});
 		
 		arbutus = new Vessel();

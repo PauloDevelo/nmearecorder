@@ -12,7 +12,7 @@ import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
 
-public final class SerialVirtuinoConnector  extends VirtuinoConnector {
+public class SerialVirtuinoConnector  extends VirtuinoConnector {
 	private static final Logger log = Logger.getLogger(SerialVirtuinoConnector.class);
 
 	private static final int MAX_CONSECUTIVE_TIMEOUT_BEFORE_RECONNECTION = 3;
@@ -33,7 +33,7 @@ public final class SerialVirtuinoConnector  extends VirtuinoConnector {
 	@Override
 	protected void stop() {
 		try {
-			if(this.serialPort.closePort() == false) {
+			if(this.serialPort.isOpened() && this.serialPort.closePort() == false) {
 				log.error("Error when trying to close the port " + this.context.portName);
 			}
 		} catch (SerialPortException e) {

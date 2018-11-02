@@ -14,6 +14,7 @@ import arbutus.service.ServiceManager;
 import arbutus.timeservice.SynchronizationException;
 import arbutus.virtuino.connectors.VirtuinoCommandType;
 import arbutus.virtuino.service.IVirtuinoService;
+import arbutus.virtuino.service.VirtuinoServiceException;
 import arbutus.virtuino.service.VirtuinoServiceType;
 
 @InfluxMeasurementAnnotation(name="Engine")
@@ -61,33 +62,38 @@ public class EngineMeasurement extends InfluxMeasurement<EngineMeasurement> impl
 		this.initExpectedValue();
 		
 		IVirtuinoService virtuinoService = ServiceManager.getInstance().getService(IVirtuinoService.class);
-		for(EngineMeasurementType measurement : EngineMeasurementType.values()){
-			switch(measurement) {
-			case AGE:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setAge);
-				break;
-			case BAT_VOLTAGE:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setBatVoltage);
-				break;
-			case CONSO:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setConsumption);
-				break;
-			case DIESEL_VOL:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setDieselQty);
-				break;
-			case RPM:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setRpm);
-				break;
-			case TEMP_COOLANT:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setCoolantTemp);
-				break;
-			case TEMP_EXHAUST:
-				virtuinoService.subscribe(VirtuinoServiceType.Engine, VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setExhaustTemp);
-				break;
-			default:
-				log.warn("The engine measurement " + measurement + " is not in the EngineMeasurementType");
-				break;
+		try {
+			for(EngineMeasurementType measurement : EngineMeasurementType.values()){
+				switch(measurement) {
+				case AGE:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setAge);
+					break;
+				case BAT_VOLTAGE:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setBatVoltage);
+					break;
+				case CONSO:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setConsumption);
+					break;
+				case DIESEL_VOL:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setDieselQty);
+					break;
+				case RPM:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setRpm);
+					break;
+				case TEMP_COOLANT:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setCoolantTemp);
+					break;
+				case TEMP_EXHAUST:
+					virtuinoService.subscribe(VirtuinoServiceType.Engine.getVal(), VirtuinoCommandType.VirtualFloat, measurement.getPin(), this::setExhaustTemp);
+					break;
+				default:
+					log.warn("The engine measurement " + measurement + " is not in the EngineMeasurementType");
+					break;
+				}
 			}
+		}
+		catch(VirtuinoServiceException ex) {
+			log.error(ex.getMessage(), ex);
 		}
 		
 		this.gps = gps;

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,36 +28,29 @@ public class SerialVirtuinoConnectorTest {
 	private static VirtuinoConnector connector = null;
 	private static Thread connectorThread = null;
 	
-	@BeforeClass
-	public static void setUp() throws VirtuinoConnectorException {
-		connector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "COM5", 1000, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-		connectorThread = new Thread(connector);
-		
-		connectorThread.start();
-		
-		// The connector won't be running right after the start, so let's wait a maximum of 10sec ...
-		int nbSec = 0;
-		while(!connector.isReady() && nbSec++ < 20)
-			ToolBox.wait(1);
-		
-		if(!connector.isReady()) {
-			throw new VirtuinoConnectorException("Connector did not get ready within 20 sec...");
-		}
-	}
-	
-	@AfterClass
-	public static void tearDown() throws VirtuinoConnectorException {
-		connector.interrupt();
-		
-		int nbSec = 0;
-		while(nbSec++ < 10 && connectorThread.isAlive()) {
-			ToolBox.wait(1);
-		}
-		
-		if(connectorThread.isAlive()) {
-			throw new VirtuinoConnectorException("The thread of the connector is still alive.");
-		}
-	}
+//	@BeforeClass
+//	public static void setUp() throws VirtuinoConnectorException {
+//		connector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "COM5", 1000, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+//		connector.startProcess();
+//		
+//		// The connector won't be running right after the start, so let's wait a maximum of 10sec ...
+//		int nbSec = 0;
+//		while(!connector.isReady() && nbSec++ < 20)
+//			ToolBox.wait(1);
+//		
+//		if(!connector.isReady()) {
+//			throw new VirtuinoConnectorException("Connector did not get ready within 20 sec...");
+//		}
+//	}
+//	
+//	@AfterClass
+//	public static void tearDown() throws VirtuinoConnectorException {
+//		connector.stopProcess();
+//		
+//		if(connector.isProcessAlive()) {
+//			throw new VirtuinoConnectorException("The thread of the connector is still alive.");
+//		}
+//	}
 	
 	@Test(timeout=120000)
 	@Ignore
@@ -71,6 +65,7 @@ public class SerialVirtuinoConnectorTest {
 	}
 	
 	@Test(timeout=120000)
+	@Ignore
 	public void GetEngineInfo_With_Engine_ON__It_Shoud_Return_A_No_Zero_Value() throws VirtuinoConnectorException {
 		// Arrange
 		
@@ -94,6 +89,7 @@ public class SerialVirtuinoConnectorTest {
 	}
 	
 	@Test(timeout=120000)
+	@Ignore
 	public void GetFirmwareCode_With_Engine_ON__It_Shoud_Return_1_5_Value() throws VirtuinoConnectorException {
 		// Arrange
 		
@@ -103,5 +99,52 @@ public class SerialVirtuinoConnectorTest {
 		// Assert
 		
 		assertEquals("Because the firmware of the engine monitor is currently 1.5", 1.5f, firmwareCode, 0.0001);
+	}
+	
+	@Test(timeout=500000)
+	public void ReadChar_WhenSerialPortNotOpened_Should_ThrowAVirtuinoExceptionAndStopShouldBeCalled() {
+		// Arrange
+		SerialVirtuinoConnectorStub connector = new SerialVirtuinoConnectorStub(new SerialVirtuinoContext("myvirtuinoConnector", 100, "COMX", 100, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+	
+		// Act
+		try {
+			connector.readChar();
+			fail("Because an VirtuinoConnectorException should be thrown");
+		}
+		catch(VirtuinoConnectorException ex) {
+			
+		}
+		
+		// Assert
+		assertThat("Because the Serial port is not opened, stop should be called once", connector.getNbCallStop(), is(1));
+	}
+	
+	private class SerialVirtuinoConnectorStub extends SerialVirtuinoConnector{
+		private int nbCallStop = 0;
+		
+		/* (non-Javadoc)
+		 * @see arbutus.virtuino.connectors.serial.SerialVirtuinoConnector#stop()
+		 */
+		@Override
+		protected void stop() {
+			nbCallStop++;
+			super.stop();
+		}
+
+		public SerialVirtuinoConnectorStub(SerialVirtuinoContext context) {
+			super(context);
+		}
+
+		public int getNbCallStop() {
+			return nbCallStop;
+		}
+
+		/* (non-Javadoc)
+		 * @see arbutus.virtuino.connectors.serial.SerialVirtuinoConnector#readChar()
+		 */
+		@Override
+		public char readChar() throws VirtuinoConnectorException {
+			return super.readChar();
+		}
 	}
 }

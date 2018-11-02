@@ -182,7 +182,6 @@ public class ServiceManagerTest {
 		
 		@Override
 		public ServiceState getState() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 

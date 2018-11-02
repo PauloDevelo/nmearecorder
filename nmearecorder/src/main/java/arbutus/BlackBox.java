@@ -13,6 +13,10 @@ import arbutus.service.ServiceManager;
 import arbutus.timeservice.ITimeService;
 import arbutus.timeservice.TimeService;
 import arbutus.virtuino.service.VirtuinoService;
+import arbutus.virtuino.service.VirtuinoServiceType;
+import arbutus.virtuino.connectors.VirtuinoConnector;
+import arbutus.virtuino.connectors.serial.SerialVirtuinoConnector;
+import arbutus.virtuino.connectors.serial.SerialVirtuinoContext;
 import arbutus.virtuino.service.IVirtuinoService;
 
 
@@ -49,6 +53,13 @@ public class BlackBox {
 			
 			srvMgr.register(IInfluxdbRepository.class, new InfluxdbRepository(new InfluxdbContext()));
 			srvMgr.register(IVirtuinoService.class, new VirtuinoService());
+			
+			IVirtuinoService virtuinoService = srvMgr.getService(IVirtuinoService.class);
+			VirtuinoConnector enginemonitor = new SerialVirtuinoConnector(new SerialVirtuinoContext(VirtuinoServiceType.Engine.getVal()));
+			virtuinoService.addVirtuinoConnector(VirtuinoServiceType.Engine.getVal(), enginemonitor);
+			
+			VirtuinoConnector pirmonitor = new SerialVirtuinoConnector(new SerialVirtuinoContext(VirtuinoServiceType.PIR.getVal()));
+			virtuinoService.addVirtuinoConnector(VirtuinoServiceType.PIR.getVal(), pirmonitor);
 			
 			srvMgr.startServices();
 			

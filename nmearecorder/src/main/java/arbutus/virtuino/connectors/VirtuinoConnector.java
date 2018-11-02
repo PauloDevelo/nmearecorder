@@ -14,27 +14,49 @@ import org.apache.log4j.Logger;
 public abstract class VirtuinoConnector implements Runnable {
 	private final static Logger log = Logger.getLogger(VirtuinoConnector.class);
 	
+	/**
+	 * Thread of the connector. The thread is managed by the connector with the two public methods startProcess and stopProcess.
+	 * The thread is responsible to notify the subscribers when new values are read approximately every VirtuinoContext.scanRateInMilliSec
+	 */
 	private Thread threadConnector = null;
 	
 	private final VirtuinoContext context;
 	
+	/**
+	 * This flag need to be synchronysed because it is read and write from different threads.
+	 */
 	private boolean isInterrupted = false;
 	
 	private boolean loggingAlertOverSize = true;
 	
+	/**
+	 * Contains the subscribers. This map is protected by synchronized section because it is potentially possible to add subscriber after the thread is started.
+	 */
 	private final HashMap<VirtuinoItem, List<BiConsumer<Long, Float>>> consumers = new HashMap<>();
 	
-	private final ExecutorService executor = Executors.newFixedThreadPool(2);
+	/**
+	 * The executor responsible to call the subscribers.
+	 */
+	private ExecutorService executor = null;
+	
+	/**
+	 * List of the CompletableFuture waiting for to be processed by the executor.
+	 */
 	private final List<CompletableFuture<Void>> cfs = new ArrayList<>();
 
+	/**
+	 * Constructor for a VirtuinoConstructor
+	 * @param context The Virtuino context contains only the scan rate in milliseconds.
+	 */
 	public VirtuinoConnector(VirtuinoContext context) {
 		this.context = context;
 	}
 	
-	public VirtuinoContext getContext() {
-		return this.context;
-	}
-	
+	/**
+	 * This synchronous function allows to subscribe a consumer when a new value is available
+	 * @param item The Virtuino item
+	 * @param consumer The consumer
+	 */
 	public synchronized void subscribe(VirtuinoItem item, BiConsumer<Long, Float> consumer) {
 		List<BiConsumer<Long, Float>> existingList = this.consumers.get(item);
 		
@@ -45,7 +67,7 @@ public abstract class VirtuinoConnector implements Runnable {
 		}
 		else {
 			if(existingList.contains(consumer)) {
-				log.error("Attempt to subscribe the same consumer for the same Virtuino item several times");
+				log.error("The Virtuino connector " + this.getConnectorKey() + ": Attempt to subscribe the same consumer several times.");
 			}
 			else {
 				existingList.add(consumer);
@@ -53,11 +75,16 @@ public abstract class VirtuinoConnector implements Runnable {
 		}
 	}
 	
+	/**
+	 * This synchronous function allows to unsubscribe a consumer from a Virtuino Item new value
+	 * @param item The item the subscriber was subscribed on
+	 * @param consumer The function to call when a new value is available
+	 */
 	public synchronized void unsubscribe(VirtuinoItem item, BiConsumer<Long, Float> consumer) {		
 		List<BiConsumer<Long, Float>> existingList = this.consumers.get(item);
 		
 		if(existingList == null) {
-			log.error("Impossible to unsubscribe a consumer which has not been subscribed");
+			log.error("The Virtuino connector " + this.getConnectorKey() + ": Impossible to unsubscribe a consumer which has not been subscribed");
 		}
 		else {
 			if(existingList.remove(consumer)) {
@@ -66,11 +93,17 @@ public abstract class VirtuinoConnector implements Runnable {
 				}
 			}
 			else {
-				log.error("Impossible to unsubscribe a consumer which has not been subscribed");
+				log.error("The Virtuino connector " + this.getConnectorKey() + ": Impossible to unsubscribe a consumer which has not been subscribed");
 			}
 		}
 	}
 	
+	/**
+ 	 * This synchronous function returns the value read on a digital pin
+ 	 * @param pinNumber The digital pin number to read from
+ 	 * @return The value of the Virtual float.
+ 	 * @throws VirtuinoConnectorException Throws a VirtuinoException in case the connector was not ready and connected, or if an error occured when reading the Virtual float.
+ 	 */
  	public synchronized float getSyncVirtualFloat(int pinNumber) throws VirtuinoConnectorException {
  		if(this.isConnectorReady()) {
  			return this.getFloat(VirtuinoCommandType.VirtualFloat, pinNumber);
@@ -80,6 +113,12 @@ public abstract class VirtuinoConnector implements Runnable {
 		}
 	}
  	
+ 	/**
+ 	 * Ths synchronous function returns the value read on a digital pin
+ 	 * @param pinNumber The digital pin number to read from
+ 	 * @return True if the digital pin is high, false if low.
+ 	 * @throws VirtuinoConnectorException Throws a VirtuinoException in case the connector was not ready and connected or if an error occured when reading the digital pin.
+ 	 */
  	public synchronized boolean readSyncDigitalPin(int pinNumber) throws VirtuinoConnectorException{
  		if(this.isConnectorReady()) {
  			float value = this.getFloat(VirtuinoCommandType.DigitalRead, pinNumber);
@@ -91,6 +130,11 @@ public abstract class VirtuinoConnector implements Runnable {
 		}
  	}
 	
+ 	/**
+ 	 * This synchronous function returns the firmware code of the Virtuino library embedded in the microcontroler.
+ 	 * @return The firmware code.
+ 	 * @throws VirtuinoConnectorException Throws an VirtuinoConnectorException if the connector was not ready and connected.
+ 	 */
 	public synchronized float getSyncFirmwareCode() throws VirtuinoConnectorException {
 		if(this.isConnectorReady()) {
 			return this.writeFloat(VirtuinoCommandType.FirmwareCode, 0, 1);
@@ -101,20 +145,71 @@ public abstract class VirtuinoConnector implements Runnable {
 		
 	}
 	
+	/**
+	 * This synchronous function indicates if the connector is ready (Connected to the external resource and ready to get values from the Virtuino firmware). It is used currently for UTs only.
+	 * @return True if the connector is connected and ready, false otherwise.
+	 */
 	public synchronized boolean isReady() {
 		return this.isConnectorReady();
 	}
 	
-	public synchronized void interrupt() {
-		this.isInterrupted = true;
+	/**
+	 * This asynchronous function start the internal thread of the connector.
+	 */
+	public void startProcess() {
+		this.threadConnector = new Thread(this);
+		this.threadConnector.start();
 	}
 	
-	public synchronized boolean isInterrupted() {
-		return this.isInterrupted ;
+	/**
+	 * This asynchronous function stop the internal thread of the connector.
+	 */
+	public void stopProcess() {
+		if (this.threadConnector != null && this.threadConnector.isAlive()) {
+			synchronized(this) {
+				this.isInterrupted = true;
+			}
+			
+			try {
+				int nbMilli = 0;
+				while(nbMilli < this.context.getScanRateInMilliSec() && this.threadConnector.isAlive()) {
+					TimeUnit.MILLISECONDS.sleep(100);
+					nbMilli += 100;
+				}
+				
+				if(this.threadConnector.isAlive()) {
+					this.threadConnector.interrupt();
+					TimeUnit.MILLISECONDS.sleep(100);
+				}
+			} catch (InterruptedException e) {
+				this.threadConnector.interrupt();
+			}
+			
+			if(!this.threadConnector.isAlive()) {
+				this.threadConnector = null;
+			}
+			else {
+				log.error("The Virtuino connector " + this.getConnectorKey() + " could not stopped");
+			}
+		}
+	}
+	
+	/**
+	 * This function indicates if the internal thread of the connector is still alive. It is currently used for some UTs
+	 * @return true if the thread is alive, false otherwise.
+	 */
+	public boolean isProcessAlive() {
+		return this.threadConnector != null && this.threadConnector.isAlive();
 	}
 	
 	@Override
-	public final void run() {		
+	public final void run() {
+		this.executor = Executors.newFixedThreadPool(2);
+		
+		synchronized(this) {
+			this.isInterrupted = false;
+		}
+		
 		while(!isInterrupted()) {
 			synchronized (this) {
 				checkAndReconnect();
@@ -124,7 +219,9 @@ public abstract class VirtuinoConnector implements Runnable {
 			try {
 				Thread.sleep(this.context.getScanRateInMilliSec());
 			} catch (InterruptedException e) {
-				this.interrupt();
+				synchronized(this) {
+					this.isInterrupted = true;
+				}
 			}
 		}
 		
@@ -132,45 +229,16 @@ public abstract class VirtuinoConnector implements Runnable {
 			this.stop();
 		}
 		
-		executor.shutdown();
+		this.executor.shutdown();
 		try {
-			executor.awaitTermination(3, TimeUnit.SECONDS);
+			this.executor.awaitTermination(3, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			executor.shutdownNow();
+			this.executor.shutdownNow();
 		}
 	}
 	
-	private void manageSubscriptions() {
-		if(this.isConnectorReady()) {
-			for(VirtuinoItem item : this.consumers.keySet()) {
-				try {
-					float value = this.getFloat(item.command, item.pin);
-					long nanoTime = System.nanoTime();
-					
-					for(BiConsumer<Long, Float> consumer : this.consumers.get(item)) {
-						if(this.cfs.size() < 40) {
-							this.loggingAlertOverSize  = true;
-							this.cfs.add(CompletableFuture.runAsync(() -> consumer.accept(nanoTime, value), executor));
-						}
-						else {
-							if(this.loggingAlertOverSize) {
-								log.warn("More than 40 CompletableFuture in progress: " + cfs.size());
-								this.loggingAlertOverSize = false;
-							}
-						}
-					}
-				}
-				catch (VirtuinoConnectorException e) {
-					log.error(e.getMessage());
-				}
-			}
-		}
-		
-		this.cfs.removeIf(cf -> cf.isDone());
-	}
-
 	/**
-	 * Function to check the connection with the micro controler. Attempt to reconnect if it is not already connected.
+	 * Function to check the connection with the microcontroler. Attempt to reconnect if it is not already connected.
 	 */
 	protected abstract void checkAndReconnect();
 	
@@ -199,30 +267,6 @@ public abstract class VirtuinoConnector implements Runnable {
 	 * @throws VirtuinoConnectorException in case of failure explaining why the read did not work.
 	 */
 	protected abstract char readChar() throws VirtuinoConnectorException;
-	
-	private final String readAnswer() throws VirtuinoConnectorException{
-		StringBuilder reponse = new StringBuilder("");
-		
-		char c = 0;
-		
-		boolean gotBeginning = false;
-		boolean gotTerminaison = false;
-		
-		while (gotBeginning == false || gotTerminaison == false) {
-			c = this.readChar();
-			
-			if(c == '!')
-				gotBeginning = true;
-			
-			if(gotBeginning == true)
-				reponse.append(c);
-			
-			if(c == '$')
-				gotTerminaison = true;
-		}	
-		
-		return reponse.toString();
-	}
 	
 	protected final float getFloat(VirtuinoCommandType type, int pinNumber) throws VirtuinoConnectorException {
 		String command = buildReadCommand(type, pinNumber);
@@ -284,6 +328,30 @@ public abstract class VirtuinoConnector implements Runnable {
 		}	
 	}
 	
+	private final String readAnswer() throws VirtuinoConnectorException{
+		StringBuilder reponse = new StringBuilder("");
+		
+		char c = 0;
+		
+		boolean gotBeginning = false;
+		boolean gotTerminaison = false;
+		
+		while (gotBeginning == false || gotTerminaison == false) {
+			c = this.readChar();
+			
+			if(c == '!')
+				gotBeginning = true;
+			
+			if(gotBeginning == true)
+				reponse.append(c);
+			
+			if(c == '$')
+				gotTerminaison = true;
+		}	
+		
+		return reponse.toString();
+	}
+
 	private final String buildWriteCommand(VirtuinoCommandType commandType, int pin, float value) {
 		StringBuilder command = new StringBuilder(20);
 		
@@ -325,11 +393,48 @@ public abstract class VirtuinoConnector implements Runnable {
 		return command.toString();
 	}
 
-	public Thread getThreadConnector() {
-		return threadConnector;
+	private void manageSubscriptions() {
+		if(this.cfs.size() < 40) {
+			if(this.loggingAlertOverSize == false) {
+				log.warn("The virtuino connector " + this.getConnectorKey() + " recovered:" +  + cfs.size());
+			}
+			this.loggingAlertOverSize  = true;
+			
+			for(VirtuinoItem item : this.consumers.keySet()) {
+				float value = Float.NaN;
+				if(this.isConnectorReady()) {
+					try {
+						value = this.getFloat(item.command, item.pin);
+					}
+					catch (VirtuinoConnectorException e) {
+						log.error("The virtuino connector " + this.getConnectorKey() + ": An error occured when reading the item " + item.toString(), e);
+					}
+				}
+				
+				final long nanoTime = System.nanoTime();
+					
+				for(BiConsumer<Long, Float> consumer : this.consumers.get(item)) {
+					final float biConsumerValue = value;
+					this.cfs.add(CompletableFuture.runAsync(() -> consumer.accept(nanoTime, biConsumerValue), executor));
+				}
+			}
+		}
+		else {
+			if(this.loggingAlertOverSize) {
+				log.warn("The Virtuino connector " + this.getConnectorKey() + " contains more than 40 CompletableFuture in progress: " + cfs.size());
+				this.loggingAlertOverSize = false;
+			}
+		}
+		
+		
+		this.cfs.removeIf(cf -> cf.isDone());
 	}
 
-	public void setThreadConnector(Thread threadConnector) {
-		this.threadConnector = threadConnector;
+	private String getConnectorKey() {
+		return this.context.connectorKey;
+	}
+
+	private synchronized boolean isInterrupted() {
+		return this.isInterrupted ;
 	}
 }

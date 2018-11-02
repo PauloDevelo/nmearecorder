@@ -6,7 +6,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	WindMeasurementTest.class,
-	AnemoMeasurementTest.class
+	AnemoMeasurementTest.class,
+	EngineMeasurementTest.class
 })
 
 public class MeasurementTestSuite {

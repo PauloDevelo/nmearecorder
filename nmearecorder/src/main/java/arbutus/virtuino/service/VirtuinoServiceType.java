@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum VirtuinoServiceType {
-	Engine("engine.properties"),
-	PIR("pir.properties");
+	Engine("engine"),
+	PIR("pir");
 	
 	private final String idConnector;
 	private static Map<String, VirtuinoServiceType> map = new HashMap<>();

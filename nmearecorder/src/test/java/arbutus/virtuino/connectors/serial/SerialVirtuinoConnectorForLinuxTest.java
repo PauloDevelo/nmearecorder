@@ -10,18 +10,16 @@ import arbutus.virtuino.connectors.VirtuinoItem;
 
 public class SerialVirtuinoConnectorForLinuxTest {
 	private static VirtuinoConnector connector = null;
-	private static Thread connectorThread = null;
-
+	
 	public static void main(String[] args) {
 		try {
 			SerialVirtuinoConnectorForLinuxTest tester = new SerialVirtuinoConnectorForLinuxTest();
 			
-			//connector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "COM10", 1000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-			connector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "/dev/rfcomm0", 3000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-			//connector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "/dev/rfcomm1", 15000, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-			connectorThread = new Thread(connector);
-			
-			connectorThread.start();
+			//connector = new SerialVirtuinoConnector(new SerialVirtuinoContext("pir", 3000, "COM10", 1000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+			connector = new SerialVirtuinoConnector(new SerialVirtuinoContext("pir", 3000, "/dev/rfcomm0", 3000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+			//connector = new SerialVirtuinoConnector(new SerialVirtuinoContext("engine", 3000, "/dev/rfcomm1", 15000, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+
+			connector.startProcess();
 			
 			// The connector won't be running right after the start, so let's wait a maximum of 10sec ...
 			int nbTenthSec = 0;
@@ -50,17 +48,8 @@ public class SerialVirtuinoConnectorForLinuxTest {
 				ex.printStackTrace();
 			}
 			
-			connector.interrupt();
+			connector.stopProcess();	
 			
-			nbTenthSec = 0;
-			while(nbTenthSec++ < 100 && connectorThread.isAlive()) {
-				ToolBox.waitms(100);
-			}
-			
-			if(connectorThread.isAlive()) {
-				throw new VirtuinoConnectorException("The thread of the connector is still alive.");
-			}
-		
 		} catch (VirtuinoConnectorException e1) {
 			e1.printStackTrace();
 		}

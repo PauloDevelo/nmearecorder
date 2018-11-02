@@ -6,11 +6,15 @@ public class VirtuinoContext {
 	 */
 	private int scanRateInMilliSec = 1000;
 	
-	public VirtuinoContext(int scanRateInMilliSec) {
+	public final String connectorKey;
+	
+	public VirtuinoContext(String connectorKey, int scanRateInMilliSec) {
 		this.scanRateInMilliSec = scanRateInMilliSec;
+		this.connectorKey = connectorKey;
 	}
 	
-	public VirtuinoContext() {
+	public VirtuinoContext(String connectorkey) {
+		this.connectorKey = connectorkey;
 	}
 
 	/**

@@ -18,24 +18,19 @@ import arbutus.virtuino.connectors.VirtuinoConnectorException;
 public class MultipleSerialVirtuinoConnectorTest {
 	
 	private static VirtuinoConnector engineConnector = null;
-	private static Thread engineConnectorThread = null;
-	
 	private static VirtuinoConnector arduinoConnector = null;
-	private static Thread arduinoConnectorThread = null;
 	
 	@BeforeClass
 	public static void setUp() throws VirtuinoConnectorException {
 //		engineConnector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "COM5", 1000, SerialBaud.BAUDRATE_4800, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-//		engineConnectorThread = start(engineConnector);
+//		start(engineConnector);
 //		
-		arduinoConnector = new SerialVirtuinoConnector(new SerialVirtuinoContext(3000, "COM10", 1000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
-		arduinoConnectorThread = start(arduinoConnector);
+		arduinoConnector = new SerialVirtuinoConnector(new SerialVirtuinoContext("arduino", 3000, "COM10", 1000, SerialBaud.BAUDRATE_38400, SerialDataBits.DATABITS_8, SerialStopBits.STOPBITS_1, SerialParity.PARITY_NONE));
+		start(arduinoConnector);
 	}
 	
-	public static Thread start(VirtuinoConnector connector) throws VirtuinoConnectorException {
-		Thread connectorThread = new Thread(connector);
-		
-		connectorThread.start();
+	public static void start(VirtuinoConnector connector) throws VirtuinoConnectorException {
+		connector.startProcess();
 		
 		// The arduino Connector won't be running right after the start, so let's wait a maximum of 20sec ...
 		int nbSec = 0;
@@ -45,27 +40,13 @@ public class MultipleSerialVirtuinoConnectorTest {
 		if(!connector.isReady()) {
 			throw new VirtuinoConnectorException("The connector did not get ready within 20 sec...");
 		}
-		
-		return connectorThread;
 	}
 	
 	@AfterClass
 	public static void tearDown() throws VirtuinoConnectorException {
-		stop(arduinoConnector, arduinoConnectorThread);
-		//stop(engineConnector, engineConnectorThread);
-	}
-	
-	public static void stop(VirtuinoConnector connector, Thread connectorThread) throws VirtuinoConnectorException {
-		connector.interrupt();
+		arduinoConnector.stopProcess();
 		
-		int nbSec = 0;
-		while(nbSec++ < 10 && connectorThread.isAlive()) {
-			ToolBox.wait(1);
-		}
-		
-		if(connectorThread.isAlive()) {
-			throw new VirtuinoConnectorException("The thread is still alive.");
-		}
+		//engineConnector.stopProcess();
 	}
 	
 	@Test
