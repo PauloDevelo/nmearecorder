@@ -1,7 +1,7 @@
 # nmearecorder
 This is a program Java that runs as a service on my Raspberry Pi 1 revision 2.
 
-It reads a TCP socket (Kplex) where the nmea sentence are written.
+It reads a TCP socket (Kplex) where the nmea sentences are written.
 Then, there is all the "mecanics" to decode any kind of NMEA sentence. In this project, I coded all the NMEA sentences that I receive in my sailboat.
 
 Then, thanks to a NMEA service, I can subscribe to the sentences that I'm interested to for my own needs.
